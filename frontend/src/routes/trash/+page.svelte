@@ -62,9 +62,11 @@
     try {
       await goalsAPI.permanentDelete(goalToDelete);
       goalToDelete = null;
+      showNinjaSlice = false;
       await loadDeletedGoals();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to delete goal';
+      showNinjaSlice = false;
     }
   }
 </script>
@@ -269,6 +271,7 @@
     color: #6b7280;
     font-size: 0.875rem;
     line-height: 1.5;
+    white-space: pre-line;
   }
 
   .goal-meta {
