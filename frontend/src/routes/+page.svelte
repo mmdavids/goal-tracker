@@ -79,7 +79,7 @@
     const currentQuarterEndDate = new Date(currentQuarterEndYear, currentQuarterEndMonth - 1, currentQuarterEndDay, 23, 59, 59);
 
     daysLeftInCurrentQuarter = Math.ceil((currentQuarterEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    currentQuarterName = `Q${currentQuarterNumber} ${currentQuarterEndYear}`;
+    currentQuarterName = `Q${currentQuarterNumber} ${fiscalYearStartYear}/${fiscalYearStartYear+1}`;
 
     // Calculate Q4 end date
     const q4StartMonth = ((fiscalYearStart + 9 - 1) % 12) + 1; // Q4 is Q1 + 9 months
@@ -157,7 +157,10 @@
     <div class="countdown-card">
       <div class="countdown-header">
         <Calendar size={20} />
-        <h3>Current Quarter ({currentQuarterName})</h3>
+        <h3>Current Quarter</h3>
+      </div>
+      <div class="countdown-header">
+        <h3>{currentQuarterName}</h3>
       </div>
       <div class="countdown-value">
         <span class="days">{daysLeftInCurrentQuarter}</span>
