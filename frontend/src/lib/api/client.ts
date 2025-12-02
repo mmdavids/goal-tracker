@@ -168,6 +168,13 @@ export const progressAPI = {
   async delete(id: number): Promise<void> {
     return fetchAPI(`/progress/${id}`, { method: 'DELETE' });
   },
+
+  async move(id: number, goalId: number): Promise<ProgressUpdate> {
+    return fetchAPI(`/progress/${id}/move`, {
+      method: 'PATCH',
+      body: JSON.stringify({ goalId }),
+    });
+  },
 };
 
 // Images API
@@ -253,5 +260,43 @@ export const goalTypesAPI = {
 
   async delete(id: number): Promise<void> {
     return fetchAPI(`/goal-types/${id}`, { method: 'DELETE' });
+  },
+};
+
+// Config API
+export const configAPI = {
+  async getDatabasePath(): Promise<{
+    current: string;
+    configured: string;
+    default: string;
+    requiresRestart: boolean;
+  }> {
+    return fetchAPI('/config/database-path');
+  },
+
+  async updateDatabasePath(path: string): Promise<{
+    success: boolean;
+    message: string;
+    path: string;
+  }> {
+    return fetchAPI('/config/database-path', {
+      method: 'PUT',
+      body: JSON.stringify({ path }),
+    });
+  },
+
+  async browseDirectory(path?: string): Promise<{
+    currentPath: string;
+    parentPath: string | null;
+    entries: Array<{
+      name: string;
+      path: string;
+      isDirectory: boolean;
+      isFile: boolean;
+    }>;
+    error?: string;
+  }> {
+    const params = path ? `?path=${encodeURIComponent(path)}` : '';
+    return fetchAPI(`/config/browse-directory${params}`);
   },
 };

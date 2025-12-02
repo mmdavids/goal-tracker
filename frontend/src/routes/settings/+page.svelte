@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goalTypesAPI, type GoalType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar } from 'lucide-svelte';
+  import { goalTypesAPI, configAPI, type GoalType } from '$lib/api/client';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen } from 'lucide-svelte';
+  import PathBrowser from '$lib/components/PathBrowser.svelte';
 
   let goalTypes: GoalType[] = [];
   let loading = true;
@@ -10,6 +11,14 @@
 
   // Fiscal year settings - store the start month of the fiscal year (Q1)
   let fiscalYearStartMonth = 9;  // September by default
+
+  // Database settings
+  let currentDatabasePath = '';
+  let configuredDatabasePath = '';
+  let defaultDatabasePath = '';
+  let databasePathInput = '';
+  let databaseMessage = '';
+  let showPathBrowser = false;
 
   const months = [
     { value: 1, label: 'January' },
@@ -39,7 +48,49 @@
   onMount(async () => {
     await loadGoalTypes();
     loadQuarterSettings();
+    await loadDatabasePath();
   });
+
+  async function loadDatabasePath() {
+    try {
+      const result = await configAPI.getDatabasePath();
+      currentDatabasePath = result.current;
+      configuredDatabasePath = result.configured;
+      defaultDatabasePath = result.default;
+      databasePathInput = result.configured || '';
+    } catch (err) {
+      console.error('Failed to load database path:', err);
+    }
+  }
+
+  async function saveDatabasePath() {
+    try {
+      databaseMessage = '';
+      error = '';
+      const result = await configAPI.updateDatabasePath(databasePathInput);
+      databaseMessage = result.message;
+      await loadDatabasePath();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to update database path';
+    }
+  }
+
+  function useDefaultPath() {
+    databasePathInput = '';
+  }
+
+  function openPathBrowser() {
+    showPathBrowser = true;
+  }
+
+  function handlePathSelect(path: string) {
+    databasePathInput = path;
+    showPathBrowser = false;
+  }
+
+  function handlePathBrowserCancel() {
+    showPathBrowser = false;
+  }
 
   function loadQuarterSettings() {
     const saved = localStorage.getItem('fiscalYearStart');
@@ -223,7 +274,71 @@
       </button>
     </div>
   </section>
+
+  <section class="settings-section">
+    <div class="section-header">
+      <div class="header-with-icon">
+        <Database size={24} />
+        <h2>Database Configuration</h2>
+      </div>
+    </div>
+
+    <p class="section-description">
+      Configure where your goal tracker database is stored. Leave empty to use the default location in your home directory.
+    </p>
+
+    <div class="database-info">
+      <div class="info-item">
+        <strong>Currently Using:</strong>
+        <code>{currentDatabasePath || 'Loading...'}</code>
+      </div>
+      <div class="info-item">
+        <strong>Default Location:</strong>
+        <code>{defaultDatabasePath || 'Loading...'}</code>
+      </div>
+    </div>
+
+    <div class="database-path-input">
+      <label for="database-path">Custom Database Path (optional):</label>
+      <div class="path-input-row">
+        <input
+          type="text"
+          id="database-path"
+          bind:value={databasePathInput}
+          placeholder="Leave empty for default location"
+        />
+        <button class="btn-browse" on:click={openPathBrowser}>
+          <FolderOpen size={18} />
+          Browse
+        </button>
+      </div>
+      <button class="btn-secondary" on:click={useDefaultPath}>
+        Use Default Location
+      </button>
+    </div>
+
+    {#if databaseMessage}
+      <div class="info-banner">
+        {databaseMessage}
+      </div>
+    {/if}
+
+    <div class="section-actions">
+      <button class="btn-primary" on:click={saveDatabasePath}>
+        Save Database Path
+      </button>
+    </div>
+  </section>
 </div>
+
+{#if showPathBrowser}
+  <PathBrowser
+    onSelect={handlePathSelect}
+    onCancel={handlePathBrowserCancel}
+    initialPath={databasePathInput || currentDatabasePath}
+    selectMode="file"
+  />
+{/if}
 
 {#if showForm}
   <div class="modal-overlay" on:click={closeForm}>
@@ -667,5 +782,114 @@
   .section-actions {
     display: flex;
     justify-content: flex-end;
+  }
+
+  .database-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .info-item strong {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .info-item code {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    word-break: break-all;
+  }
+
+  .database-path-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .database-path-input label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .path-input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .database-path-input input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Monaco', 'Courier New', monospace;
+  }
+
+  .database-path-input input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .btn-browse {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-browse:hover {
+    background: #2563eb;
+  }
+
+  .btn-secondary {
+    padding: 0.625rem 1rem;
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-secondary:hover {
+    background: #d1d5db;
+  }
+
+  .info-banner {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.875rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
   }
 </style>
