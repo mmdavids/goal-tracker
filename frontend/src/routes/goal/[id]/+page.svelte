@@ -302,7 +302,7 @@
       {:else}
         <div class="updates-list">
           {#each updates as update (update.id)}
-            <ProgressUpdateComponent {update} on:updated={loadGoalData} on:deleted={loadGoalData} />
+            <ProgressUpdateComponent {update} on:updated={loadGoalData} on:deleted={loadGoalData} on:moved={loadGoalData} />
           {/each}
         </div>
       {/if}
@@ -531,6 +531,7 @@
     font-size: 1.125rem;
     margin: 0 0 1.5rem 0;
     line-height: 1.6;
+    white-space: pre-line;
   }
 
   .error-banner {

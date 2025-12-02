@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ProgressUpdate } from '$lib/api/client';
-  import { imagesAPI, progressAPI } from '$lib/api/client';
+  import type { ProgressUpdate, Goal } from '$lib/api/client';
+  import { imagesAPI, progressAPI, goalsAPI } from '$lib/api/client';
   import { formatDateTime, toDateTimeLocalString } from '$lib/utils/date';
   import ImageModal from './ImageModal.svelte';
   import ImageUpload from './ImageUpload.svelte';
@@ -30,6 +30,8 @@
   let ninjaSliceAction: 'image' | 'update' | null = null;
   let imageToDelete: number | null = null;
   let fileInput: HTMLInputElement;
+  let availableGoals: Goal[] = [];
+  let selectedGoalId = update.goal_id;
 
   function openImage(filename: string, caption: string | null) {
     selectedImage = {
@@ -42,13 +44,22 @@
     selectedImage = null;
   }
 
-  function startEditing() {
+  async function startEditing() {
     isEditing = true;
     editTitle = update.title;
     editNotes = update.notes || '';
     editProgressDelta = update.progress_delta;
     editDateAchieved = toDateTimeLocalString(update.date_achieved || update.created_at);
+    selectedGoalId = update.goal_id;
     newImages = [];
+
+    // Load available goals
+    try {
+      availableGoals = await goalsAPI.getAll('active');
+    } catch (error) {
+      console.error('Failed to load goals:', error);
+      availableGoals = [];
+    }
   }
 
   function cancelEditing() {
@@ -75,6 +86,13 @@
       // Upload new images if any
       if (newImages.length > 0) {
         await imagesAPI.upload(update.id, newImages);
+      }
+
+      // Move to different goal if changed
+      if (selectedGoalId !== update.goal_id) {
+        await progressAPI.move(update.id, selectedGoalId);
+        // If moved to a different goal, we should notify that it was moved
+        dispatch('moved', { newGoalId: selectedGoalId });
       }
 
       // Dispatch event to refresh the update
@@ -204,6 +222,25 @@
           type="datetime-local"
           bind:value={editDateAchieved}
         />
+      </div>
+
+      <div class="form-group">
+        <label for="goalSelect">Move to Goal</label>
+        <select
+          id="goalSelect"
+          bind:value={selectedGoalId}
+          class="goal-select"
+        >
+          {#each availableGoals as goal (goal.id)}
+            <option value={goal.id}>
+              {goal.title}
+              {#if goal.id === update.goal_id}(Current){/if}
+            </option>
+          {/each}
+        </select>
+        {#if selectedGoalId !== update.goal_id}
+          <p class="move-warning">This progress update will be moved to the selected goal when you save.</p>
+        {/if}
       </div>
 
       {#if update.images && update.images.length > 0}
@@ -378,6 +415,7 @@
     font-size: 0.875rem;
     margin: 0 0 0.75rem 0;
     line-height: 1.6;
+    white-space: pre-line;
   }
 
   .images {
@@ -470,7 +508,8 @@
   }
 
   .form-group input,
-  .form-group textarea {
+  .form-group textarea,
+  .form-group select {
     padding: 0.625rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
@@ -479,10 +518,23 @@
   }
 
   .form-group input:focus,
-  .form-group textarea:focus {
+  .form-group textarea:focus,
+  .form-group select:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .goal-select {
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .move-warning {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.813rem;
+    color: #f59e0b;
+    font-weight: 500;
   }
 
   .existing-images h5 {

@@ -135,6 +135,38 @@ export class ProgressService {
     return this.findOne(id);
   }
 
+  moveToGoal(id: number, targetGoalId: number) {
+    const db = this.databaseService.getDb();
+
+    // Check if update exists
+    const update = this.findOne(id);
+
+    // Check if target goal exists and is not deleted/archived
+    const goalStmt = db.prepare(
+      'SELECT * FROM goals WHERE id = ? AND deleted_at IS NULL AND status != ?',
+    );
+    const targetGoal = goalStmt.get(targetGoalId, 'completed') as DbGoal | undefined;
+    if (!targetGoal) {
+      throw new NotFoundException(
+        `Target goal with ID ${targetGoalId} not found or is archived`,
+      );
+    }
+
+    // Move the progress update
+    const updateStmt = db.prepare(`
+      UPDATE progress_updates SET goal_id = ? WHERE id = ?
+    `);
+    updateStmt.run(targetGoalId, id);
+
+    // Update both goals' timestamps
+    const updateGoalStmt = db.prepare(`
+      UPDATE goals SET updated_at = CURRENT_TIMESTAMP WHERE id IN (?, ?)
+    `);
+    updateGoalStmt.run(update.goal_id, targetGoalId);
+
+    return this.findOne(id);
+  }
+
   remove(id: number) {
     const db = this.databaseService.getDb();
 

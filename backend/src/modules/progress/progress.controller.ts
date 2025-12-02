@@ -42,6 +42,14 @@ export class ProgressController {
     return this.progressService.update(id, updateProgressDto);
   }
 
+  @Patch('progress/:id/move')
+  move(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('goalId') goalId: number,
+  ) {
+    return this.progressService.moveToGoal(id, goalId);
+  }
+
   @Delete('progress/:id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.progressService.remove(id);
