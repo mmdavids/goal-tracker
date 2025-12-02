@@ -1,0 +1,236 @@
+<script lang="ts">
+  import { Zap, X } from 'lucide-svelte';
+  import { onMount } from 'svelte';
+
+  export let title: string;
+  export let message: string;
+  export let placeholder: string = '';
+  export let defaultValue: string = '';
+  export let confirmText: string = 'Confirm';
+  export let cancelText: string = 'Cancel';
+  export let onConfirm: (value: string) => void;
+  export let onCancel: () => void;
+
+  let inputValue = defaultValue;
+  let inputElement: HTMLInputElement;
+
+  onMount(() => {
+    inputElement?.focus();
+    inputElement?.select();
+  });
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      onCancel();
+    } else if (e.key === 'Enter' && inputValue.trim()) {
+      handleConfirm();
+    }
+  }
+
+  function handleBackdropClick(e: MouseEvent) {
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  }
+
+  function handleConfirm() {
+    if (inputValue.trim()) {
+      onConfirm(inputValue.trim());
+    }
+  }
+</script>
+
+<svelte:window on:keydown={handleKeydown} />
+
+<div class="modal-backdrop" on:click={handleBackdropClick} role="presentation">
+  <div class="modal-content" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-message">
+    <button class="close-button" on:click={onCancel} aria-label="Close modal">
+      <X size={20} />
+    </button>
+
+    <div class="modal-icon">
+      <Zap size={48} />
+    </div>
+
+    <h2 id="modal-title">{title}</h2>
+    <p id="modal-message">{message}</p>
+
+    <div class="input-group">
+      <input
+        type="text"
+        bind:this={inputElement}
+        bind:value={inputValue}
+        {placeholder}
+        class="modal-input"
+      />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" on:click={onCancel}>
+        {cancelText}
+      </button>
+      <button class="btn-primary" on:click={handleConfirm} disabled={!inputValue.trim()}>
+        {confirmText}
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+    animation: fadeIn 0.15s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+    animation: slideUp 0.2s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .close-button:hover {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  .modal-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    background: #dbeafe;
+    color: #3b82f6;
+  }
+
+  h2 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: center;
+  }
+
+  p {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .input-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .modal-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: stretch;
+  }
+
+  .btn-secondary,
+  .btn-primary {
+    flex: 1;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  .btn-secondary:hover {
+    background: #f9fafb;
+  }
+
+  .btn-primary {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
