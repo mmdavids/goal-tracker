@@ -182,6 +182,7 @@
     font-size: 0.875rem;
     margin: 0 0 1rem 0;
     line-height: 1.5;
+    white-space: pre-line;
   }
 
   .goal-footer {
