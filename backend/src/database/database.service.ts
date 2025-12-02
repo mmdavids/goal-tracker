@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import Database = require('better-sqlite3');
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { homedir } from 'os';
+import { existsSync, mkdirSync } from 'fs';
 import { DbTableInfo } from './database.types';
 
 @Injectable()
@@ -8,9 +10,48 @@ export class DatabaseService implements OnModuleInit {
   private db: Database.Database;
 
   constructor() {
-    const dbPath = process.env.DATABASE_PATH || './database.sqlite';
+    const dbPath = this.getDbPath();
+    this.ensureDbDirectoryExists(dbPath);
     this.db = new Database(dbPath);
     this.db.pragma('journal_mode = WAL');
+    console.log(`📁 Database location: ${dbPath}`);
+  }
+
+  private getDbPath(): string {
+    // Priority: 1. Environment variable, 2. Config file, 3. Default
+    if (process.env.DATABASE_PATH) {
+      console.log('📍 Using database path from environment variable');
+      return process.env.DATABASE_PATH;
+    }
+
+    // Check config file
+    try {
+      const configPath = join(process.cwd(), 'config.json');
+      if (existsSync(configPath)) {
+        const configFile = require('fs').readFileSync(configPath, 'utf-8');
+        const config = JSON.parse(configFile);
+        if (config.databasePath && config.databasePath.trim()) {
+          console.log('📍 Using database path from config.json');
+          return config.databasePath;
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️  Failed to read config file, using default:', error);
+    }
+
+    // Default to user's home directory in a .goal-tracker folder
+    console.log('📍 Using default database path');
+    const homeDir = homedir();
+    const appDataDir = join(homeDir, '.goal-tracker');
+    return join(appDataDir, 'database.sqlite');
+  }
+
+  private ensureDbDirectoryExists(dbPath: string): void {
+    const dir = dirname(dbPath);
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+      console.log(`📂 Created database directory: ${dir}`);
+    }
   }
 
   onModuleInit() {

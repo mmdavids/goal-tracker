@@ -18,6 +18,9 @@ build/
 .env.local
 .env.*.local
 
+# Configuration
+backend/config.json
+
 # Database files
 *.sqlite
 *.sqlite-shm
