@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goalTypesAPI, configAPI, type GoalType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen } from 'lucide-svelte';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save } from 'lucide-svelte';
   import PathBrowser from '$lib/components/PathBrowser.svelte';
 
   let goalTypes: GoalType[] = [];
@@ -270,6 +270,7 @@
 
     <div class="section-actions">
       <button class="btn-primary" on:click={saveQuarterSettings}>
+        <Save size={18} />
         Save Fiscal Year Settings
       </button>
     </div>
@@ -312,7 +313,8 @@
           Browse
         </button>
       </div>
-      <button class="btn-secondary" on:click={useDefaultPath}>
+      <button class="btn-default-path" on:click={useDefaultPath}>
+        <Wrench size={16} />
         Use Default Location
       </button>
     </div>
@@ -325,6 +327,7 @@
 
     <div class="section-actions">
       <button class="btn-primary" on:click={saveDatabasePath}>
+        <Save size={18} />
         Save Database Path
       </button>
     </div>
@@ -399,7 +402,10 @@
 
         <div class="form-actions">
           <button type="button" class="btn-secondary" on:click={closeForm}>Cancel</button>
-          <button type="submit" class="btn-primary" disabled={!formName.trim()}>Save</button>
+          <button type="submit" class="btn-primary" disabled={!formName.trim()}>
+            <Save size={18} />
+            Save
+          </button>
         </div>
       </form>
     </div>
@@ -886,6 +892,27 @@
 
   .btn-secondary:hover {
     background: #d1d5db;
+  }
+
+  .btn-default-path {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+
+  .btn-default-path:hover {
+    background: var(--border-primary);
+    border-color: var(--text-tertiary);
   }
 
   .info-banner {
