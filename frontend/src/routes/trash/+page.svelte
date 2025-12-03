@@ -123,7 +123,7 @@
                   {/if}
                 </span>
               {/if}
-              <span class="meta-item">Deleted: {formatDateTime(goal.updated_at)}</span>
+              <span class="meta-item" title={new Date(goal.updated_at).toLocaleString()}>Deleted: {formatDateTime(goal.updated_at)}</span>
             </div>
           </div>
           <div class="goal-actions">

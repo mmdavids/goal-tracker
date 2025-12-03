@@ -334,7 +334,7 @@
     {/if}
 
     <div class="update-footer">
-      <span class="time">{formatDateTime(update.date_achieved || update.created_at)}</span>
+      <span class="time" title={new Date(update.date_achieved || update.created_at).toLocaleString()}>{formatDateTime(update.date_achieved || update.created_at)}</span>
     </div>
   {/if}
 </div>
