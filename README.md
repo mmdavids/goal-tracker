@@ -1,5 +1,13 @@
 # Goal Tracking App - Implementation Complete
 
+NOTICE: THIS APP IS IN BETA STATE. IT IS A PRODUCTIVTY TOOL AND IN FUTURE MAY CONTAIN BREAKING CHANGES TO THE DB.
+
+AI DISCLAIMER: ALL CODE IS FULLY AI GENERATED USIGN CLAUDE CODE.
+
+Use this App to manage all your goals and track updates.
+
+Future plans will be to release a standalone mac app.
+
 ## How to Run the Application
 
 ### Backend
