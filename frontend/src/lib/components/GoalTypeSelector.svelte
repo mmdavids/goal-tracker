@@ -60,7 +60,7 @@
   .loading {
     text-align: center;
     padding: 1rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .type-grid {
@@ -75,9 +75,9 @@
     align-items: center;
     gap: 0.5rem;
     padding: 1rem 0.75rem;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border-primary);
     border-radius: 12px;
-    background: white;
+    background: var(--bg-primary);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -101,7 +101,7 @@
   .name {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
     text-align: center;
   }
 </style>

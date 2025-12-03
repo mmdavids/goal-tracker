@@ -87,7 +87,7 @@
   }
 
   .drop-zone {
-    border: 2px dashed #d1d5db;
+    border: 2px dashed var(--border-secondary);
     border-radius: 12px;
     padding: 3rem 2rem;
     display: flex;
@@ -96,13 +96,13 @@
     gap: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .drop-zone:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
-    color: #3b82f6;
+    border-color: var(--color-primary);
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-primary);
   }
 
   .drop-zone p {
@@ -126,7 +126,7 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-primary);
   }
 
   .remove-btn {

@@ -74,7 +74,7 @@
   }
 
   .modal-content {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 16px;
     padding: 2rem;
     max-width: 400px;
@@ -101,7 +101,7 @@
     right: 1rem;
     background: transparent;
     border: none;
-    color: #9ca3af;
+    color: var(--text-tertiary);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 6px;
@@ -112,8 +112,8 @@
   }
 
   .close-button:hover {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
   }
 
   .modal-icon {
@@ -137,14 +137,14 @@
     margin: 0 0 0.75rem 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
     text-align: center;
   }
 
   p {
     margin: 0 0 1.5rem 0;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--text-secondary);
     line-height: 1.6;
     text-align: center;
   }
@@ -168,13 +168,13 @@
   }
 
   .btn-secondary {
-    background: white;
-    color: #374151;
-    border: 1px solid #d1d5db;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-secondary);
   }
 
   .btn-secondary:hover {
-    background: #f9fafb;
+    background: var(--bg-secondary);
   }
 
   .btn-danger {
@@ -187,7 +187,7 @@
   }
 
   .btn-danger:not(.danger) {
-    background: #3b82f6;
+    background: var(--color-primary);
   }
 
   .btn-danger:not(.danger):hover {
