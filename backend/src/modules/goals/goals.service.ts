@@ -289,4 +289,90 @@ export class GoalsService {
 
     return stmt.get();
   }
+
+  async exportToMarkdown(goalIds: number[]): Promise<string> {
+    const db = this.databaseService.getDb();
+    let markdown = `# Goals Export\n\n`;
+    markdown += `Generated on ${new Date().toLocaleString()}\n\n`;
+    markdown += `---\n\n`;
+
+    for (const goalId of goalIds) {
+      // Get goal details
+      const goalStmt = db.prepare(`
+        SELECT g.*,
+          gt.name as goal_type_name,
+          gt.icon as goal_type_icon,
+          COALESCE(SUM(pu.progress_delta), 0) as progress
+        FROM goals g
+        LEFT JOIN goal_types gt ON g.goal_type_id = gt.id
+        LEFT JOIN progress_updates pu ON g.id = pu.goal_id
+        WHERE g.id = ?
+        GROUP BY g.id
+      `);
+      const goal = goalStmt.get(goalId) as any;
+
+      if (!goal) continue;
+
+      // Goal header
+      const icon = goal.goal_type_icon || '🎯';
+      markdown += `## ${icon} ${goal.title}\n\n`;
+
+      if (goal.description) {
+        markdown += `${goal.description}\n\n`;
+      }
+
+      markdown += `**Status:** ${goal.status}\n`;
+      markdown += `**Progress:** ${goal.progress}%\n`;
+
+      if (goal.target_date) {
+        markdown += `**Target Date:** ${new Date(goal.target_date).toLocaleDateString()}\n`;
+      }
+
+      if (goal.quarter || goal.year) {
+        markdown += `**Period:** ${goal.quarter || ''} ${goal.year || ''}`.trim() + '\n';
+      }
+
+      markdown += `\n`;
+
+      // Get progress updates
+      const updatesStmt = db.prepare(`
+        SELECT pu.*,
+          COUNT(DISTINCT i.id) as image_count
+        FROM progress_updates pu
+        LEFT JOIN images i ON pu.id = i.progress_update_id
+        WHERE pu.goal_id = ?
+        GROUP BY pu.id
+        ORDER BY COALESCE(pu.date_achieved, pu.created_at) DESC
+      `);
+      const updates = updatesStmt.all(goalId) as any[];
+
+      if (updates.length > 0) {
+        markdown += `### Progress Updates\n\n`;
+
+        for (const update of updates) {
+          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          markdown += `#### ${update.title}\n\n`;
+          markdown += `*${date}*`;
+
+          if (update.progress_delta > 0) {
+            markdown += ` • Progress: +${update.progress_delta}%`;
+          }
+
+          if (update.image_count > 0) {
+            markdown += ` • 📷 ${update.image_count} image${update.image_count > 1 ? 's' : ''}`;
+          }
+
+          markdown += `\n\n`;
+
+          if (update.notes) {
+            markdown += `${update.notes}\n\n`;
+          }
+        }
+      }
+
+      markdown += `---\n\n`;
+    }
+
+    return markdown;
+  }
 }

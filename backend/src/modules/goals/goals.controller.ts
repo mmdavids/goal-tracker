@@ -9,7 +9,10 @@ import {
   Query,
   ParseIntPipe,
   Logger,
+  Header,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
@@ -79,5 +82,14 @@ export class GoalsController {
   @Patch(':id/archive')
   archive(@Param('id', ParseIntPipe) id: number) {
     return this.goalsService.archive(id);
+  }
+
+  @Post('export')
+  @Header('Content-Type', 'text/markdown')
+  async exportToMarkdown(@Body('goalIds') goalIds: number[], @Res() res: Response) {
+    const markdown = await this.goalsService.exportToMarkdown(goalIds);
+    const filename = `goals-export-${new Date().toISOString().split('T')[0]}.md`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(markdown);
   }
 }
