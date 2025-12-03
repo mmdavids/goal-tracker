@@ -6,7 +6,7 @@
   import ImageUpload from './ImageUpload.svelte';
   import ConfirmModal from './ConfirmModal.svelte';
   import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
-  import { Pencil, Check, X, Trash2, ImagePlus } from 'lucide-svelte';
+  import { Pencil, Check, X, Trash2, ImagePlus, Save } from 'lucide-svelte';
   import { createEventDispatcher } from 'svelte';
 
   export let update: ProgressUpdate;
@@ -275,7 +275,7 @@
           Cancel
         </button>
         <button type="button" class="btn-primary" on:click={saveUpdate} disabled={isSaving || !editTitle.trim()}>
-          <Check size={18} />
+          <Save size={18} />
           {isSaving ? 'Saving...' : 'Save'}
         </button>
       </div>
@@ -375,8 +375,8 @@
 
 <style>
   .progress-update {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.25rem;
   }
@@ -398,7 +398,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .delta {
@@ -411,7 +411,7 @@
   }
 
   .notes {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0 0 0.75rem 0;
     line-height: 1.6;
@@ -462,7 +462,7 @@
     height: 150px;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-primary);
     display: block;
     transition: transform 0.2s;
   }
@@ -474,18 +474,18 @@
   .caption {
     margin: 0.25rem 0 0 0;
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .update-footer {
     margin-top: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--bg-tertiary);
   }
 
   .time {
     font-size: 0.875rem;
-    color: #9ca3af;
+    color: var(--text-tertiary);
   }
 
   /* Edit Mode Styles */
@@ -504,24 +504,26 @@
   .form-group label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   .form-group input,
   .form-group textarea,
   .form-group select {
     padding: 0.625rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 0.875rem;
     font-family: inherit;
+    background: var(--bg-primary);
+    color: var(--text-primary);
   }
 
   .form-group input:focus,
   .form-group textarea:focus,
   .form-group select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
@@ -540,7 +542,7 @@
   .existing-images h5 {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--text-primary);
     margin: 0 0 0.5rem 0;
   }
 
@@ -575,7 +577,7 @@
   .icon-btn {
     background: transparent;
     border: none;
-    color: #6b7280;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.375rem;
     border-radius: 6px;
@@ -586,7 +588,7 @@
   }
 
   .icon-btn:hover {
-    background: #f3f4f6;
+    background: var(--bg-tertiary);
     color: #3b82f6;
   }
 
@@ -643,13 +645,13 @@
   }
 
   .btn-secondary {
-    background: white;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #f9fafb;
+    background: var(--bg-secondary);
   }
 
   .btn-secondary:disabled {

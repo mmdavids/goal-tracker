@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import GoalTypeSelector from './GoalTypeSelector.svelte';
-  import { Calendar } from 'lucide-svelte';
+  import { Calendar, Save, Plus } from 'lucide-svelte';
 
   export let title = '';
   export let description = '';
@@ -201,7 +201,14 @@
     <input type="date" id="targetDate" bind:value={targetDate} />
   </div>
 
-  <button type="submit" class="btn-primary" disabled={!title.trim()}>{submitText}</button>
+  <button type="submit" class="btn-primary" disabled={!title.trim()}>
+    {#if isEditing}
+      <Save size={20} />
+    {:else}
+      <Plus size={20} />
+    {/if}
+    {submitText}
+  </button>
 </form>
 
 <style>
@@ -226,31 +233,32 @@
   label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   input,
   textarea,
   select {
     padding: 0.75rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
     transition: border-color 0.2s;
-    background: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
   }
 
   input:focus,
   textarea:focus,
   select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
   }
 
   .btn-primary {
     padding: 0.875rem 1.5rem;
-    background: #3b82f6;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 8px;
@@ -281,9 +289,9 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.5rem 0.75rem;
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-secondary);
     border-radius: 6px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -292,9 +300,9 @@
   }
 
   .quarter-btn:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
-    color: #1f2937;
+    background: var(--border-primary);
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
   }
 
   .quarter-btn:active {

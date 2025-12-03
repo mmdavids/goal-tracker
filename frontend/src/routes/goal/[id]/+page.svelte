@@ -10,7 +10,7 @@
   import InputModal from '$lib/components/InputModal.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
-  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive } from 'lucide-svelte';
+  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save } from 'lucide-svelte';
 
   let goal: Goal | null = null;
   let updates: ProgressUpdate[] = [];
@@ -287,6 +287,7 @@
         </div>
 
         <button class="btn-primary" on:click={handleAddUpdate} disabled={!updateTitle.trim()}>
+          <Save size={20} />
           Save Update
         </button>
       </div>
@@ -376,14 +377,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #6b7280;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
   }
 
   .back-link:hover {
-    color: #3b82f6;
+    color: var(--color-primary);
   }
 
   .delete-goal-btn {
@@ -392,8 +393,8 @@
     gap: 0.5rem;
     padding: 0.625rem 1rem;
     background: transparent;
-    color: #dc2626;
-    border: 1px solid #dc2626;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -402,7 +403,7 @@
   }
 
   .delete-goal-btn:hover {
-    background: #dc2626;
+    background: var(--color-danger);
     color: white;
   }
 
@@ -412,8 +413,8 @@
     gap: 0.5rem;
     padding: 0.625rem 1rem;
     background: transparent;
-    color: #3b82f6;
-    border: 1px solid #3b82f6;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -422,7 +423,7 @@
   }
 
   .btn-edit:hover:not(:disabled) {
-    background: #3b82f6;
+    background: var(--color-primary);
     color: white;
   }
 
@@ -437,8 +438,8 @@
     gap: 0.5rem;
     padding: 0.625rem 1rem;
     background: transparent;
-    color: #059669;
-    border: 1px solid #059669;
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -447,7 +448,7 @@
   }
 
   .btn-archive:hover:not(:disabled) {
-    background: #059669;
+    background: var(--color-success);
     color: white;
   }
 
@@ -461,9 +462,9 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1rem;
-    background: white;
-    color: #374151;
-    border: 1px solid #d1d5db;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -472,12 +473,12 @@
   }
 
   .btn-secondary:hover {
-    background: #f9fafb;
+    background: var(--bg-secondary);
   }
 
   .edit-goal-form {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
@@ -487,7 +488,7 @@
     margin: 0 0 1.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .goal-header {
@@ -511,11 +512,11 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .progress-display {
-    background: #f3f4f6;
+    background: var(--bg-tertiary);
     padding: 0.75rem 1.25rem;
     border-radius: 12px;
   }
@@ -523,11 +524,11 @@
   .progress-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .description {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 1.125rem;
     margin: 0 0 1.5rem 0;
     line-height: 1.6;
@@ -563,7 +564,7 @@
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--color-primary);
     color: white;
   }
 
@@ -577,17 +578,17 @@
   }
 
   .btn-secondary {
-    background: #f3f4f6;
-    color: #1f2937;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
   }
 
   .btn-secondary:hover {
-    background: #e5e7eb;
+    background: var(--border-primary);
   }
 
   .update-form {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -597,7 +598,7 @@
     margin: 0 0 1.25rem 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .form-group {
@@ -609,17 +610,25 @@
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   input[type='text'],
   textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  input[type='text']:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
   }
 
   input[type='range'] {
@@ -634,16 +643,16 @@
     margin: 0 0 1.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .empty-updates {
     text-align: center;
     padding: 3rem;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .updates-list {
