@@ -74,8 +74,8 @@
 
   <div class="goal-footer">
     <div class="meta">
-      <span>📝 {goal.update_count} updates</span>
-      <span>🖼️ {goal.image_count} images</span>
+      <span>📝 {goal.update_count} {goal.update_count === 1 ? 'update' : 'updates'}</span>
+      <span>🖼️ {goal.image_count} {goal.image_count === 1 ? 'image' : 'images'}</span>
       {#if goal.quarter || goal.year}
         <span class="quarter-year">
           {#if goal.quarter && goal.year}
@@ -88,7 +88,7 @@
         </span>
       {/if}
     </div>
-    <span class="time">{timeAgo(goal.updated_at)}</span>
+    <span class="time" title={new Date(goal.updated_at).toLocaleString()}>{timeAgo(goal.updated_at)}</span>
   </div>
 
   {#if goal.tags && goal.tags.length > 0}
@@ -119,7 +119,8 @@
 
 <style>
   .goal-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -128,6 +129,7 @@
     text-decoration: none;
     color: inherit;
     position: relative;
+    min-height: 100%;
   }
 
   .goal-card:hover {
@@ -183,13 +185,18 @@
     margin: 0 0 1rem 0;
     line-height: 1.5;
     white-space: pre-line;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
   }
 
   .goal-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
     font-size: 0.875rem;
     color: #6b7280;
   }
