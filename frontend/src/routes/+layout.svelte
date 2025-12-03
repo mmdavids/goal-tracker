@@ -1,6 +1,6 @@
 <script lang="ts">
   import CelebrationAnimation from '$lib/components/CelebrationAnimation.svelte';
-  import { Archive, Trash2, Moon, Sun, Settings, Home } from 'lucide-svelte';
+  import { Archive, Trash2, Moon, Sun, Settings, Home, FileText } from 'lucide-svelte';
   import { theme } from '$lib/stores/theme';
   import '../app.css';
 </script>
@@ -28,6 +28,10 @@
         <a href="/settings" class="nav-link">
           <Settings size={18} />
           Settings
+        </a>
+        <a href="/changelog" class="nav-link">
+          <FileText size={18} />
+          Changelog
         </a>
         <button class="theme-toggle" on:click={() => theme.toggle()} aria-label="Toggle theme">
           {#if $theme === 'dark'}
