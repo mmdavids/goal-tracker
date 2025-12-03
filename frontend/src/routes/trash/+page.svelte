@@ -186,12 +186,12 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .subtitle {
     margin: 0;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 1rem;
   }
 
@@ -209,19 +209,19 @@
   .loading {
     text-align: center;
     padding: 3rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
   }
 
   .empty-icon {
-    color: #d1d5db;
+    color: var(--text-tertiary);
     margin-bottom: 1rem;
   }
 
@@ -229,12 +229,12 @@
     margin: 0 0 0.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .empty-state p {
     margin: 0;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .goals-list {
@@ -248,8 +248,8 @@
     justify-content: space-between;
     align-items: center;
     gap: 1.5rem;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.5rem;
   }
@@ -263,12 +263,12 @@
     margin: 0 0 0.5rem 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .description {
     margin: 0 0 0.75rem 0;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.875rem;
     line-height: 1.5;
     white-space: pre-line;
@@ -282,7 +282,7 @@
 
   .meta-item {
     font-size: 0.875rem;
-    color: #9ca3af;
+    color: var(--text-tertiary);
   }
 
   .goal-actions {

@@ -423,22 +423,22 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .back-link {
-    color: #6b7280;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
   }
 
   .back-link:hover {
-    color: #3b82f6;
+    color: var(--color-primary);
   }
 
   .settings-section {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -455,7 +455,7 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .btn-primary,
@@ -473,7 +473,7 @@
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--color-primary);
     color: white;
   }
 
@@ -487,12 +487,12 @@
   }
 
   .btn-secondary {
-    background: #f3f4f6;
-    color: #1f2937;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
   }
 
   .btn-secondary:hover {
-    background: #e5e7eb;
+    background: var(--border-primary);
   }
 
   .error-banner {
@@ -507,7 +507,7 @@
   .empty-state {
     text-align: center;
     padding: 2rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .types-list {
@@ -521,13 +521,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-primary);
     border-radius: 8px;
     transition: all 0.2s;
   }
 
   .type-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px var(--shadow);
   }
 
   .type-info {
@@ -554,18 +554,18 @@
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .type-details p {
     margin: 0 0 0.25rem 0;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .usage {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: var(--text-tertiary);
   }
 
   .type-actions {
@@ -575,21 +575,21 @@
 
   .icon-btn {
     padding: 0.5rem;
-    background: #f3f4f6;
+    background: var(--bg-tertiary);
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--text-secondary);
     transition: all 0.2s;
   }
 
   .icon-btn:hover:not(:disabled) {
-    background: #e5e7eb;
-    color: #1f2937;
+    background: var(--border-primary);
+    color: var(--text-primary);
   }
 
   .icon-btn.danger {
-    color: #ef4444;
+    color: var(--color-danger);
   }
 
   .icon-btn.danger:hover:not(:disabled) {
@@ -616,7 +616,7 @@
   }
 
   .modal {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
@@ -629,14 +629,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-primary);
   }
 
   .modal-header h2 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .close-btn {
@@ -644,11 +644,11 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .close-btn:hover {
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .modal-form {
@@ -664,17 +664,19 @@
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   .form-group input,
   .form-group textarea {
     width: 100%;
     padding: 0.625rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
+    background: var(--bg-primary);
+    color: var(--text-primary);
   }
 
   .icon-picker,
@@ -687,27 +689,27 @@
   .icon-option {
     width: 2.5rem;
     height: 2.5rem;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border-primary);
     border-radius: 8px;
-    background: white;
+    background: var(--bg-primary);
     font-size: 1.25rem;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .icon-option:hover {
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
   }
 
   .icon-option.selected {
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
     background: #eff6ff;
   }
 
   .color-option {
     width: 2.5rem;
     height: 2.5rem;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border-primary);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -718,8 +720,8 @@
   }
 
   .color-option.selected {
-    border-color: #1f2937;
-    box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+    border-color: var(--text-primary);
+    box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px currentColor;
   }
 
   .form-actions {
@@ -734,13 +736,13 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .section-description {
     margin: 0 0 1.5rem 0;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--text-secondary);
     line-height: 1.6;
   }
 
@@ -760,22 +762,23 @@
   .quarter-setting label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   .quarter-setting select {
     padding: 0.625rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 0.875rem;
     font-family: inherit;
-    background: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     cursor: pointer;
   }
 
   .quarter-setting select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
@@ -788,7 +791,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    background: #f9fafb;
+    background: var(--bg-secondary);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
@@ -802,16 +805,17 @@
 
   .info-item strong {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .info-item code {
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 0.875rem;
-    background: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding: 0.5rem;
     border-radius: 4px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-primary);
     word-break: break-all;
   }
 
@@ -825,7 +829,7 @@
   .database-path-input label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 
   .path-input-row {
