@@ -4,7 +4,7 @@
   import { goalsAPI, type Goal } from '$lib/api/client';
   import GoalCard from '$lib/components/GoalCard.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
-  import { Plus, X, Archive, Calendar } from 'lucide-svelte';
+  import { Plus, X, Archive, Calendar, Download } from 'lucide-svelte';
 
   let showForm = false;
   let loading = true;
@@ -15,6 +15,8 @@
   let daysLeftInYearEndQuarter = 0;
   let currentQuarterName = '';
   let yearEndQuarterName = '';
+  let selectedGoalIds: Set<number> = new Set();
+  let showExportButton = false;
 
   function getFiscalYearStart(): number {
     const saved = localStorage.getItem('fiscalYearStart');
@@ -145,6 +147,47 @@
       console.error('Failed to reload archived goals:', err);
     }
   }
+
+  function toggleGoalSelection(goalId: number) {
+    if (selectedGoalIds.has(goalId)) {
+      selectedGoalIds.delete(goalId);
+    } else {
+      selectedGoalIds.add(goalId);
+    }
+    selectedGoalIds = selectedGoalIds; // Trigger reactivity
+    showExportButton = selectedGoalIds.size > 0;
+  }
+
+  function selectAllGoals() {
+    $goals.forEach(goal => selectedGoalIds.add(goal.id));
+    selectedGoalIds = selectedGoalIds;
+    showExportButton = true;
+  }
+
+  function clearSelection() {
+    selectedGoalIds.clear();
+    selectedGoalIds = selectedGoalIds;
+    showExportButton = false;
+  }
+
+  async function exportSelectedGoals() {
+    if (selectedGoalIds.size === 0) return;
+
+    try {
+      const blob = await goalsAPI.exportToMarkdown(Array.from(selectedGoalIds));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `goals-export-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      clearSelection();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to export goals';
+    }
+  }
 </script>
 
 <svelte:head>
@@ -184,14 +227,29 @@
   <div class="dashboard">
     <div class="header">
       <h1>My Goals</h1>
-      <button class="btn-primary" on:click={() => (showForm = !showForm)}>
-        {#if showForm}
-          <X size={20} />
+      <div class="header-actions">
+        {#if showExportButton}
+          <button class="btn-export" on:click={exportSelectedGoals}>
+            <Download size={18} />
+            Export ({selectedGoalIds.size})
+          </button>
+          <button class="btn-secondary" on:click={clearSelection}>
+            Clear
+          </button>
         {:else}
-          <Plus size={20} />
+          <button class="btn-secondary" on:click={selectAllGoals}>
+            Select All
+          </button>
         {/if}
-        {showForm ? 'Cancel' : 'New Goal'}
-      </button>
+        <button class="btn-primary" on:click={() => (showForm = !showForm)}>
+          {#if showForm}
+            <X size={20} />
+          {:else}
+            <Plus size={20} />
+          {/if}
+          {showForm ? 'Cancel' : 'New Goal'}
+        </button>
+      </div>
     </div>
 
   {#if error}
@@ -218,7 +276,17 @@
   {:else}
     <div class="goals-grid">
       {#each $goals as goal (goal.id)}
-        <GoalCard {goal} on:deleted={handleDeleteGoal} />
+        <div class="goal-wrapper">
+          <label class="goal-checkbox">
+            <input
+              type="checkbox"
+              checked={selectedGoalIds.has(goal.id)}
+              on:change={() => toggleGoalSelection(goal.id)}
+            />
+            <span class="checkmark"></span>
+          </label>
+          <GoalCard {goal} on:deleted={handleDeleteGoal} />
+        </div>
       {/each}
     </div>
   {/if}
@@ -465,5 +533,135 @@
 
   .view-all-link:hover {
     color: #2563eb;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: white;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+  }
+
+  .btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-export:hover {
+    background: #059669;
+  }
+
+  .goal-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .goal-wrapper :global(.goal-card) {
+    width: 100%;
+  }
+
+  .goal-wrapper :global(.goal-header) {
+    padding-left: 2.25rem;
+  }
+
+  .goal-checkbox {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .goal-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+  }
+
+  .checkmark {
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .goal-checkbox:hover .checkmark {
+    border-color: #3b82f6;
+  }
+
+  .goal-checkbox input[type="checkbox"]:checked ~ .checkmark {
+    background: #3b82f6;
+    border-color: #3b82f6;
+  }
+
+  .goal-checkbox input[type="checkbox"]:checked ~ .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  @media (max-width: 640px) {
+    .header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .header-actions {
+      flex-wrap: wrap;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-export {
+      flex: 1;
+      justify-content: center;
+      min-width: 120px;
+    }
   }
 </style>
