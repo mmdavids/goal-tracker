@@ -413,7 +413,7 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .btn-primary {
@@ -421,7 +421,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: #3b82f6;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 8px;
@@ -436,8 +436,8 @@
   }
 
   .form-container {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -447,7 +447,7 @@
     margin: 0 0 1.25rem 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .error-banner {
@@ -461,7 +461,7 @@
   .loading {
     text-align: center;
     padding: 3rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .empty-state {
@@ -478,12 +478,12 @@
     margin: 0 0 0.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .empty-state p {
     margin: 0 0 2rem 0;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .goals-grid {
@@ -501,7 +501,7 @@
   .archived-section {
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 2px solid #e5e7eb;
+    border-top: 2px solid var(--border-primary);
   }
 
   .archived-header {
@@ -521,11 +521,11 @@
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .view-all-link {
-    color: #3b82f6;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
@@ -546,9 +546,9 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: white;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
@@ -557,8 +557,8 @@
   }
 
   .btn-secondary:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
+    background: var(--bg-secondary);
+    border-color: var(--text-tertiary);
   }
 
   .btn-export {
@@ -566,7 +566,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: #10b981;
+    background: var(--color-success);
     color: white;
     border: none;
     border-radius: 8px;
@@ -617,20 +617,20 @@
     display: block;
     width: 24px;
     height: 24px;
-    background: white;
-    border: 2px solid #d1d5db;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-secondary);
     border-radius: 6px;
     transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px var(--shadow);
   }
 
   .goal-checkbox:hover .checkmark {
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
   }
 
   .goal-checkbox input[type="checkbox"]:checked ~ .checkmark {
-    background: #3b82f6;
-    border-color: #3b82f6;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   .goal-checkbox input[type="checkbox"]:checked ~ .checkmark::after {

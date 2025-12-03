@@ -121,8 +121,8 @@
   .goal-card {
     display: flex;
     flex-direction: column;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1.25rem;
     transition: all 0.2s;
@@ -133,7 +133,7 @@
   }
 
   .goal-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--shadow);
     transform: translateY(-2px);
   }
 
@@ -152,16 +152,16 @@
     margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .progress-badge {
-    background: #f3f4f6;
+    background: var(--bg-tertiary);
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .goal-type-badge {
@@ -180,7 +180,7 @@
   }
 
   .description {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0 0 1rem 0;
     line-height: 1.5;
@@ -198,7 +198,7 @@
     margin-top: auto;
     padding-top: 0.75rem;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   .meta {
