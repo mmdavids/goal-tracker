@@ -170,15 +170,19 @@
     showExportButton = false;
   }
 
-  async function exportSelectedGoals() {
+  async function exportSelectedGoals(format: 'markdown' | 'zip' = 'markdown') {
     if (selectedGoalIds.size === 0) return;
 
     try {
-      const blob = await goalsAPI.exportToMarkdown(Array.from(selectedGoalIds));
+      const blob = format === 'zip'
+        ? await goalsAPI.exportToZip(Array.from(selectedGoalIds))
+        : await goalsAPI.exportToMarkdown(Array.from(selectedGoalIds));
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `goals-export-${new Date().toISOString().split('T')[0]}.md`;
+      const extension = format === 'zip' ? 'zip' : 'md';
+      a.download = `goals-export-${new Date().toISOString().split('T')[0]}.${extension}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -229,9 +233,12 @@
       <h1>My Goals</h1>
       <div class="header-actions">
         {#if showExportButton}
-          <button class="btn-export" on:click={exportSelectedGoals}>
+          <button class="btn-export" on:click={() => exportSelectedGoals('zip')}>
             <Download size={18} />
-            Export ({selectedGoalIds.size})
+            Export ZIP ({selectedGoalIds.size})
+          </button>
+          <button class="btn-secondary" on:click={() => exportSelectedGoals('markdown')}>
+            Export MD
           </button>
           <button class="btn-secondary" on:click={clearSelection}>
             Clear

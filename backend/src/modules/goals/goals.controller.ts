@@ -92,4 +92,13 @@ export class GoalsController {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(markdown);
   }
+
+  @Post('export-zip')
+  @Header('Content-Type', 'application/zip')
+  async exportToZip(@Body('goalIds') goalIds: number[], @Res() res: Response) {
+    const zipStream = await this.goalsService.exportToZip(goalIds);
+    const filename = `goals-export-${new Date().toISOString().split('T')[0]}.zip`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    zipStream.pipe(res);
+  }
 }

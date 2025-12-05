@@ -159,6 +159,22 @@ export const goalsAPI = {
 
     return response.blob();
   },
+
+  async exportToZip(goalIds: number[]): Promise<Blob> {
+    const response = await fetch(`${API_URL}/goals/export-zip`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ goalIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to export goals as zip');
+    }
+
+    return response.blob();
+  },
 };
 
 // Progress API
