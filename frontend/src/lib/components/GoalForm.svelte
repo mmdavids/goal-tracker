@@ -156,7 +156,7 @@
       id="description"
       bind:value={description}
       placeholder="Add more details about your goal..."
-      rows="3"
+      rows="15"
     />
   </div>
 

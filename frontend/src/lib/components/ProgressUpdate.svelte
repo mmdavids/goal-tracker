@@ -201,7 +201,7 @@
           id="notes"
           bind:value={editNotes}
           placeholder="Add notes..."
-          rows="3"
+          rows="7"
         />
       </div>
 

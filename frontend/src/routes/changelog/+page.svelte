@@ -20,6 +20,14 @@
       <h2>2025-12-05</h2>
 
       <div class="change-group">
+        <h3>UI Improvements</h3>
+        <ul>
+          <li><strong>Export Buttons</strong>: Both export buttons now styled consistently with distinct icons (FileArchive for ZIP, FileText for MD) and goal counts</li>
+          <li><strong>Larger Text Areas</strong>: Goal description textarea increased to 15 rows, progress notes to 7 rows for easier editing</li>
+        </ul>
+      </div>
+
+      <div class="change-group">
         <h3>Goal Sorting</h3>
         <ul>
           <li>Goals now grouped by type, then sorted alphabetically by title</li>

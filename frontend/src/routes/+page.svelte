@@ -4,7 +4,7 @@
   import { goalsAPI, type Goal } from '$lib/api/client';
   import GoalCard from '$lib/components/GoalCard.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
-  import { Plus, X, Archive, Calendar, Download } from 'lucide-svelte';
+  import { Plus, X, Archive, Calendar, FileText, FileArchive } from 'lucide-svelte';
 
   let showForm = false;
   let loading = true;
@@ -236,11 +236,12 @@
       <div class="header-actions">
         {#if showExportButton}
           <button class="btn-export" on:click={() => exportSelectedGoals('zip')}>
-            <Download size={18} />
+            <FileArchive size={18} />
             Export ZIP ({selectedGoalIds.size})
           </button>
-          <button class="btn-secondary" on:click={() => exportSelectedGoals('markdown')}>
-            Export MD
+          <button class="btn-export" on:click={() => exportSelectedGoals('markdown')}>
+            <FileText size={18} />
+            Export MD ({selectedGoalIds.size})
           </button>
           <button class="btn-secondary" on:click={clearSelection}>
             Clear
