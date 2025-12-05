@@ -22,6 +22,10 @@
       <div class="change-group">
         <h3>UI Improvements</h3>
         <ul>
+          <li><strong>Progress Badge Redesign</strong>: Larger, more motivational progress badges with gradient fill indicator showing completion amount</li>
+          <li><strong>Visual Fill Amount</strong>: Badge fills left-to-right with purple gradient based on progress percentage (gray background for incomplete portion)</li>
+          <li><strong>Completion Indicators</strong>: 100% completion shows ✨ with green gradient and pulse glow, over 100% shows 🔥 with orange-red gradient and fire pulse animation</li>
+          <li><strong>Shimmer Effect</strong>: Animated shimmer overlay on all progress badges for extra polish</li>
           <li><strong>Export Buttons</strong>: Both export buttons now styled consistently with distinct icons (FileArchive for ZIP, FileText for MD) and goal counts</li>
           <li><strong>Larger Text Areas</strong>: Goal description textarea increased to 15 rows, progress notes to 7 rows for easier editing</li>
         </ul>

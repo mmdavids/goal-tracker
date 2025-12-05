@@ -56,7 +56,22 @@
     <div class="goal-title">
       <h3>{goal.title}</h3>
     </div>
-    <span class="progress-badge">{goal.progress}%</span>
+    <span
+      class="progress-badge"
+      class:completed={goal.progress >= 100}
+      class:over-completed={goal.progress > 100}
+      style="--progress: {Math.min(goal.progress, 100)}"
+    >
+      <span class="progress-text">
+        {#if goal.progress > 100}
+          🔥 {goal.progress}%
+        {:else if goal.progress === 100}
+          ✨ {goal.progress}%
+        {:else}
+          {goal.progress}%
+        {/if}
+      </span>
+    </span>
   </div>
 
   {#if goal.goal_type_name}
@@ -156,12 +171,118 @@
   }
 
   .progress-badge {
-    background: var(--bg-tertiary);
-    padding: 0.25rem 0.75rem;
+    position: relative;
+    padding: 0.5rem 1.25rem;
     border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: #475569;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .progress-badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: calc(var(--progress, 0) * 1%);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    z-index: 0;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .progress-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: shimmer 3s infinite;
+    z-index: 2;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    50%, 100% {
+      transform: translateX(200%);
+    }
+  }
+
+  .progress-text {
+    position: relative;
+    z-index: 3;
+  }
+
+  .progress-badge.completed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.4);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .progress-badge.completed::after {
+    width: 100%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 2px 12px rgba(16, 185, 129, 0.4);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
+      transform: scale(1.05);
+    }
+  }
+
+  .progress-badge.over-completed {
+    background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+    box-shadow: 0 2px 12px rgba(245, 158, 11, 0.5);
+    animation: pulse-fire 1.5s ease-in-out infinite;
+  }
+
+  .progress-badge.over-completed::after {
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  }
+
+  @keyframes pulse-fire {
+    0%, 100% {
+      box-shadow: 0 2px 12px rgba(245, 158, 11, 0.5);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 4px 24px rgba(220, 38, 38, 0.6);
+      transform: scale(1.08);
+    }
+  }
+
+  .goal-card:hover .progress-badge {
+    transform: translateY(-2px);
+  }
+
+  .goal-card:hover .progress-badge.completed {
+    animation: pulse-glow 1s ease-in-out infinite;
+  }
+
+  .goal-card:hover .progress-badge.over-completed {
+    animation: pulse-fire 1s ease-in-out infinite;
   }
 
   .goal-type-badge {
