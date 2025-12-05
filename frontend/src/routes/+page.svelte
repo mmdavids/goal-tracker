@@ -182,7 +182,8 @@
       const a = document.createElement('a');
       a.href = url;
       const extension = format === 'zip' ? 'zip' : 'md';
-      const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
       a.download = `goals-export-${timestamp}.${extension}`;
       document.body.appendChild(a);
       a.click();

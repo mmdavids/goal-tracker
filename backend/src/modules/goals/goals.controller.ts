@@ -88,7 +88,8 @@ export class GoalsController {
   @Header('Content-Type', 'text/markdown')
   async exportToMarkdown(@Body('goalIds') goalIds: number[], @Res() res: Response) {
     const markdown = await this.goalsService.exportToMarkdown(goalIds);
-    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
     const filename = `goals-export-${timestamp}.md`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(markdown);
@@ -98,7 +99,8 @@ export class GoalsController {
   @Header('Content-Type', 'application/zip')
   async exportToZip(@Body('goalIds') goalIds: number[], @Res() res: Response) {
     const zipStream = await this.goalsService.exportToZip(goalIds);
-    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
     const filename = `goals-export-${timestamp}.zip`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     zipStream.pipe(res);
