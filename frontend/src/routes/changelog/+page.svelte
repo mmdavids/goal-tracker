@@ -22,30 +22,20 @@
       <div class="change-group">
         <h3>Goal Sorting</h3>
         <ul>
-          <li><strong>Grouped by Type</strong>: Goals are now sorted by goal type and then alphabetically by title</li>
-          <li><strong>Better Organization</strong>: All goals with the same type appear together, making it easier to view related goals</li>
-          <li><strong>Consistent Sorting</strong>: Applied to dashboard, archived goals, and all exports</li>
-        </ul>
-      </div>
-
-      <div class="change-group">
-        <h3>Export Improvements</h3>
-        <ul>
-          <li><strong>Tabular Format</strong>: Progress updates now display in a clean table format with columns for #, Date, Update, Progress, Images, and Notes</li>
-          <li><strong>Sequential Numbering</strong>: Updates are numbered sequentially (oldest = 1, newest = highest number)</li>
-          <li><strong>Better Readability</strong>: Table format makes it much easier to scan update history at a glance</li>
-          <li><strong>ZIP Image Section</strong>: ZIP exports include a dedicated "Attached Images" section showing image previews grouped by update</li>
+          <li>Goals now grouped by type, then sorted alphabetically by title</li>
+          <li>Applied consistently to dashboard, archived goals, and exports</li>
         </ul>
       </div>
 
       <div class="change-group">
         <h3>Export Enhancements</h3>
         <ul>
-          <li><strong>ZIP Export</strong>: Added new export option to create a ZIP file containing goals export with attached images</li>
-          <li><strong>Images Included</strong>: ZIP export now includes all progress update images in an organized 'images/' folder</li>
-          <li><strong>Markdown with Images</strong>: Export markdown now includes image references that work when viewing the markdown from the ZIP</li>
-          <li><strong>Dual Format</strong>: UI now offers both "Export ZIP" (with images) and "Export MD" (markdown only) options</li>
-          <li><strong>Backend API</strong>: Added new /api/goals/export-zip endpoint using archiver library for ZIP creation</li>
+          <li><strong>ZIP Export</strong>: New option to export goals as ZIP file with embedded images in organized 'images/' folder</li>
+          <li><strong>Dual Format</strong>: UI now offers both "Export ZIP" (with images) and "Export MD" (markdown only)</li>
+          <li><strong>Tabular Format</strong>: Progress updates display in clean table with columns: #, Date, Update, Progress, Images, Notes</li>
+          <li><strong>Sequential Numbering</strong>: Updates numbered from oldest (1) to newest</li>
+          <li><strong>Timestamped Filenames</strong>: Export filenames include timestamp down to second (e.g., goals-export-2025-12-05T12-34-56.md) to prevent overwrites</li>
+          <li><strong>ZIP Image Gallery</strong>: ZIP exports include dedicated "Attached Images" section with previews grouped by update</li>
         </ul>
       </div>
     </section>

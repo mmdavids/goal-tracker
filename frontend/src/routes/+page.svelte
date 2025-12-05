@@ -182,7 +182,8 @@
       const a = document.createElement('a');
       a.href = url;
       const extension = format === 'zip' ? 'zip' : 'md';
-      a.download = `goals-export-${new Date().toISOString().split('T')[0]}.${extension}`;
+      const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+      a.download = `goals-export-${timestamp}.${extension}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

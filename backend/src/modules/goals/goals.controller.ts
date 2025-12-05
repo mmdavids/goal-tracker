@@ -88,7 +88,8 @@ export class GoalsController {
   @Header('Content-Type', 'text/markdown')
   async exportToMarkdown(@Body('goalIds') goalIds: number[], @Res() res: Response) {
     const markdown = await this.goalsService.exportToMarkdown(goalIds);
-    const filename = `goals-export-${new Date().toISOString().split('T')[0]}.md`;
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const filename = `goals-export-${timestamp}.md`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(markdown);
   }
@@ -97,7 +98,8 @@ export class GoalsController {
   @Header('Content-Type', 'application/zip')
   async exportToZip(@Body('goalIds') goalIds: number[], @Res() res: Response) {
     const zipStream = await this.goalsService.exportToZip(goalIds);
-    const filename = `goals-export-${new Date().toISOString().split('T')[0]}.zip`;
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const filename = `goals-export-${timestamp}.zip`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     zipStream.pipe(res);
   }
