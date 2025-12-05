@@ -3,6 +3,8 @@ import { DatabaseService } from '../../database/database.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { DbGoal, DbMilestone } from '../../database/database.types';
+import * as archiver from 'archiver';
+import { Readable } from 'stream';
 
 @Injectable()
 export class GoalsService {
@@ -57,7 +59,7 @@ export class GoalsService {
       query += ` AND g.status = ?`;
     }
 
-    query += ` GROUP BY g.id ORDER BY g.updated_at DESC`;
+    query += ` GROUP BY g.id ORDER BY g.goal_type_id ASC, g.title ASC`;
 
     const stmt = db.prepare(query);
     return status ? stmt.all(status) : stmt.all();
@@ -296,20 +298,22 @@ export class GoalsService {
     markdown += `Generated on ${new Date().toLocaleString()}\n\n`;
     markdown += `---\n\n`;
 
-    for (const goalId of goalIds) {
-      // Get goal details
-      const goalStmt = db.prepare(`
-        SELECT g.*,
-          gt.name as goal_type_name,
-          gt.icon as goal_type_icon,
-          COALESCE(SUM(pu.progress_delta), 0) as progress
-        FROM goals g
-        LEFT JOIN goal_types gt ON g.goal_type_id = gt.id
-        LEFT JOIN progress_updates pu ON g.id = pu.goal_id
-        WHERE g.id = ?
-        GROUP BY g.id
-      `);
-      const goal = goalStmt.get(goalId) as any;
+    // Get all goals with details and sort them
+    const goalsStmt = db.prepare(`
+      SELECT g.*,
+        gt.name as goal_type_name,
+        gt.icon as goal_type_icon,
+        COALESCE(SUM(pu.progress_delta), 0) as progress
+      FROM goals g
+      LEFT JOIN goal_types gt ON g.goal_type_id = gt.id
+      LEFT JOIN progress_updates pu ON g.id = pu.goal_id
+      WHERE g.id IN (${goalIds.map(() => '?').join(',')})
+      GROUP BY g.id
+      ORDER BY g.goal_type_id ASC, g.title ASC
+    `);
+    const goals = goalsStmt.all(...goalIds) as any[];
+
+    for (const goal of goals) {
 
       if (!goal) continue;
 
@@ -344,35 +348,179 @@ export class GoalsService {
         GROUP BY pu.id
         ORDER BY COALESCE(pu.date_achieved, pu.created_at) DESC
       `);
-      const updates = updatesStmt.all(goalId) as any[];
+      const updates = updatesStmt.all(goal.id) as any[];
 
       if (updates.length > 0) {
         markdown += `### Progress Updates\n\n`;
+        markdown += `| # | Date | Update | Progress | Images | Notes |\n`;
+        markdown += `|---|------|--------|----------|--------|-------|\n`;
 
-        for (const update of updates) {
+        updates.forEach((update, index) => {
           const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
-          markdown += `#### ${update.title}\n\n`;
-          markdown += `*${date}*`;
+          const number = updates.length - index; // Reverse numbering (oldest = 1, newest = highest)
+          const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
+          const imageCount = update.image_count > 0 ? `📷 ${update.image_count}` : '-';
+          const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
 
-          if (update.progress_delta > 0) {
-            markdown += ` • Progress: +${update.progress_delta}%`;
-          }
+          markdown += `| ${number} | ${date} | ${update.title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+        });
 
-          if (update.image_count > 0) {
-            markdown += ` • 📷 ${update.image_count} image${update.image_count > 1 ? 's' : ''}`;
-          }
-
-          markdown += `\n\n`;
-
-          if (update.notes) {
-            markdown += `${update.notes}\n\n`;
-          }
-        }
+        markdown += `\n`;
       }
 
       markdown += `---\n\n`;
     }
 
     return markdown;
+  }
+
+  async exportToZip(goalIds: number[]): Promise<Readable> {
+    const db = this.databaseService.getDb();
+    const archive = archiver('zip', {
+      zlib: { level: 9 }
+    });
+
+    // Generate markdown content
+    let markdown = `# Goals Export\n\n`;
+    markdown += `Generated on ${new Date().toLocaleString()}\n\n`;
+    markdown += `---\n\n`;
+
+    // Get all goals with details and sort them
+    const goalsStmt = db.prepare(`
+      SELECT g.*,
+        gt.name as goal_type_name,
+        gt.icon as goal_type_icon,
+        COALESCE(SUM(pu.progress_delta), 0) as progress
+      FROM goals g
+      LEFT JOIN goal_types gt ON g.goal_type_id = gt.id
+      LEFT JOIN progress_updates pu ON g.id = pu.goal_id
+      WHERE g.id IN (${goalIds.map(() => '?').join(',')})
+      GROUP BY g.id
+      ORDER BY g.goal_type_id ASC, g.title ASC
+    `);
+    const goals = goalsStmt.all(...goalIds) as any[];
+
+    for (const goal of goals) {
+
+      if (!goal) continue;
+
+      // Goal header
+      const icon = goal.goal_type_icon || '🎯';
+      markdown += `## ${icon} ${goal.title}\n\n`;
+
+      if (goal.description) {
+        markdown += `${goal.description}\n\n`;
+      }
+
+      markdown += `**Status:** ${goal.status}\n`;
+      markdown += `**Progress:** ${goal.progress}%\n`;
+
+      if (goal.target_date) {
+        markdown += `**Target Date:** ${new Date(goal.target_date).toLocaleDateString()}\n`;
+      }
+
+      if (goal.quarter || goal.year) {
+        markdown += `**Period:** ${goal.quarter || ''} ${goal.year || ''}`.trim() + '\n';
+      }
+
+      markdown += `\n`;
+
+      // Get progress updates with images
+      const updatesStmt = db.prepare(`
+        SELECT pu.*,
+          COUNT(DISTINCT i.id) as image_count
+        FROM progress_updates pu
+        LEFT JOIN images i ON pu.id = i.progress_update_id
+        WHERE pu.goal_id = ?
+        GROUP BY pu.id
+        ORDER BY COALESCE(pu.date_achieved, pu.created_at) DESC
+      `);
+      const updates = updatesStmt.all(goal.id) as any[];
+
+      if (updates.length > 0) {
+        markdown += `### Progress Updates\n\n`;
+        markdown += `| # | Date | Update | Progress | Images | Notes |\n`;
+        markdown += `|---|------|--------|----------|--------|-------|\n`;
+
+        updates.forEach((update, index) => {
+          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          const number = updates.length - index; // Reverse numbering (oldest = 1, newest = highest)
+          const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
+
+          // Get images for this update
+          const imagesStmt = db.prepare(`
+            SELECT id, filename, caption, original_data
+            FROM images
+            WHERE progress_update_id = ?
+          `);
+          const images = imagesStmt.all(update.id) as any[];
+
+          const imageCount = images.length > 0 ? `📷 ${images.length}` : '-';
+          const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
+
+          markdown += `| ${number} | ${date} | ${update.title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+
+          // Add images to zip
+          for (const image of images) {
+            if (!image.original_data) {
+              this.logger.warn(`Image ${image.filename} has no data, skipping`);
+              continue;
+            }
+
+            const imagePath = `images/${image.filename}`;
+
+            // Ensure we have a proper Buffer
+            const imageBuffer = Buffer.isBuffer(image.original_data)
+              ? image.original_data
+              : Buffer.from(image.original_data);
+
+            // Add image buffer to zip
+            archive.append(imageBuffer, { name: imagePath });
+          }
+        });
+
+        markdown += `\n`;
+
+        // Add image references section after the table
+        if (updates.some(u => {
+          const imagesStmt = db.prepare(`SELECT COUNT(*) as count FROM images WHERE progress_update_id = ?`);
+          const result = imagesStmt.get(u.id) as any;
+          return result.count > 0;
+        })) {
+          markdown += `#### Attached Images\n\n`;
+          updates.forEach((update, index) => {
+            const imagesStmt = db.prepare(`
+              SELECT id, filename, caption
+              FROM images
+              WHERE progress_update_id = ?
+            `);
+            const images = imagesStmt.all(update.id) as any[];
+
+            if (images.length > 0) {
+              const number = updates.length - index;
+              markdown += `**Update #${number} - ${update.title}:**\n\n`;
+              for (const image of images) {
+                const imagePath = `images/${image.filename}`;
+                markdown += `![${image.caption || image.filename}](${imagePath})\n`;
+                if (image.caption) {
+                  markdown += `*${image.caption}*\n`;
+                }
+                markdown += `\n`;
+              }
+            }
+          });
+        }
+      }
+
+      markdown += `---\n\n`;
+    }
+
+    // Add markdown file to archive
+    archive.append(markdown, { name: 'goals-export.md' });
+
+    // Finalize the archive
+    archive.finalize();
+
+    return archive;
   }
 }
