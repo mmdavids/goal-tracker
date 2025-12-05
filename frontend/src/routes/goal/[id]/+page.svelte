@@ -9,6 +9,7 @@
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import InputModal from '$lib/components/InputModal.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
+  import PadlockAnimation from '$lib/components/PadlockAnimation.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
   import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save } from 'lucide-svelte';
 
@@ -21,6 +22,7 @@
   let showArchiveModal = false;
   let showQuickWinModal = false;
   let isEditingGoal = false;
+  let showPadlockAnimation = false;
 
   // Form fields
   let updateTitle = '';
@@ -146,12 +148,32 @@
     if (!goal) return;
 
     try {
-      await goalsAPI.archive(goal.id);
       showArchiveModal = false;
+
+      // Check if we're archiving or unarchiving
+      if (goal.status === 'completed') {
+        // Unarchive
+        await goalsAPI.unarchive(goal.id);
+        await loadGoalData();
+      } else {
+        // Archive with animation
+        showPadlockAnimation = true;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to archive/unarchive goal';
+      showArchiveModal = false;
+    }
+  }
+
+  async function onPadlockAnimationComplete() {
+    if (!goal) return;
+
+    try {
+      await goalsAPI.archive(goal.id);
       goto('/');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to archive goal';
-      showArchiveModal = false;
+      showPadlockAnimation = false;
     }
   }
 </script>
@@ -186,9 +208,9 @@
             <Pencil size={18} />
             Edit Goal
           </button>
-          <button class="btn-archive" on:click={confirmArchiveGoal} disabled={goal.status === 'completed'}>
+          <button class="btn-archive" on:click={confirmArchiveGoal}>
             <Archive size={18} />
-            {goal.status === 'completed' ? 'Archived' : 'Archive'}
+            {goal.status === 'completed' ? 'Unarchive' : 'Archive'}
           </button>
           <button class="delete-goal-btn" on:click={confirmDeleteGoal}>
             <Trash2 size={18} />
@@ -324,13 +346,19 @@
 
 {#if showArchiveModal && goal}
   <ConfirmModal
-    title="Archive Goal"
-    message='Are you sure you want to mark "{goal.title}" as completed? This will archive the goal and set its status to completed.'
-    confirmText="Archive Goal"
+    title={goal.status === 'completed' ? 'Unarchive Goal' : 'Archive Goal'}
+    message={goal.status === 'completed'
+      ? `Are you sure you want to unarchive "${goal.title}"? This will set the goal back to active status.`
+      : `Are you sure you want to mark "${goal.title}" as completed? This will archive the goal and set its status to completed.`}
+    confirmText={goal.status === 'completed' ? 'Unarchive Goal' : 'Archive Goal'}
     cancelText="Cancel"
     onConfirm={handleArchiveGoal}
     onCancel={() => showArchiveModal = false}
   />
+{/if}
+
+{#if showPadlockAnimation}
+  <PadlockAnimation onComplete={onPadlockAnimationComplete} />
 {/if}
 
 {#if showQuickWinModal}

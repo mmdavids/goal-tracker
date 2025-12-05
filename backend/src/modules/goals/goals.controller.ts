@@ -84,6 +84,11 @@ export class GoalsController {
     return this.goalsService.archive(id);
   }
 
+  @Patch(':id/unarchive')
+  unarchive(@Param('id', ParseIntPipe) id: number) {
+    return this.goalsService.unarchive(id);
+  }
+
   @Post('export')
   @Header('Content-Type', 'text/markdown')
   async exportToMarkdown(@Body('goalIds') goalIds: number[], @Res() res: Response) {

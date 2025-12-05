@@ -140,6 +140,10 @@ export const goalsAPI = {
     return fetchAPI(`/goals/${id}/archive`, { method: 'PATCH' });
   },
 
+  async unarchive(id: number): Promise<Goal> {
+    return fetchAPI(`/goals/${id}/unarchive`, { method: 'PATCH' });
+  },
+
   async getStats() {
     return fetchAPI('/goals/stats');
   },

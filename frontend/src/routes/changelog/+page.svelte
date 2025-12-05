@@ -20,10 +20,19 @@
       <h2>2025-12-05</h2>
 
       <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Unarchive Goals</strong>: Archive button now toggles to "Unarchive" for completed goals, allowing you to restore archived goals back to active status</li>
+        </ul>
+      </div>
+
+      <div class="change-group">
         <h3>UI Improvements</h3>
         <ul>
+          <li><strong>Padlock Archive Animation</strong>: New animated golden padlock appears when archiving a goal, with shackle closing animation, sparkle effects, and fade transition</li>
           <li><strong>Table View</strong>: Added new table view mode on homepage with concise overview showing: checkbox, title, progress bar with percentage, goal type, update count, image count, and quarter</li>
           <li><strong>View Toggle</strong>: New toggle button with text label on dedicated row below header to switch between grid and table views, preference saved in localStorage</li>
+          <li><strong>Simplified Actions</strong>: Removed delete button from goal cards and all action buttons from table view for cleaner interface</li>
           <li><strong>Progress Badge Redesign</strong>: Larger, more motivational progress badges with gradient fill indicator showing completion amount</li>
           <li><strong>Visual Fill Amount</strong>: Badge fills left-to-right with purple gradient based on progress percentage (gray background for incomplete portion)</li>
           <li><strong>Completion Indicators</strong>: 100% completion shows ✨ with green gradient and pulse glow, over 100% shows 🔥 with orange-red gradient and fire pulse animation</li>

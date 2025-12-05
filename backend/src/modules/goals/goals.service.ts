@@ -254,6 +254,25 @@ export class GoalsService {
     return this.findOne(id);
   }
 
+  unarchive(id: number) {
+    const db = this.databaseService.getDb();
+
+    // Check if goal exists
+    this.findOne(id);
+
+    // Set status back to active and clear completed_at
+    const stmt = db.prepare(`
+      UPDATE goals
+      SET status = 'active',
+          completed_at = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    stmt.run(id);
+
+    return this.findOne(id);
+  }
+
   private checkMilestones(goalId: number, progress: number) {
     const db = this.databaseService.getDb();
 
