@@ -3,8 +3,9 @@
   import { goals } from '$lib/stores/goals';
   import { goalsAPI, type Goal } from '$lib/api/client';
   import GoalCard from '$lib/components/GoalCard.svelte';
+  import GoalTable from '$lib/components/GoalTable.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
-  import { Plus, X, Archive, Calendar, FileText, FileArchive } from 'lucide-svelte';
+  import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List } from 'lucide-svelte';
 
   let showForm = false;
   let loading = true;
@@ -17,6 +18,8 @@
   let yearEndQuarterName = '';
   let selectedGoalIds: Set<number> = new Set();
   let showExportButton = false;
+  let viewMode: 'grid' | 'table' = 'grid';
+
 
   function getFiscalYearStart(): number {
     const saved = localStorage.getItem('fiscalYearStart');
@@ -107,7 +110,17 @@
     yearEndQuarterName = `Q4 ${fiscalYearStartYear}/${nextFiscalYear}`;
   }
 
+  function toggleViewMode() {
+    viewMode = viewMode === 'grid' ? 'table' : 'grid';
+    localStorage.setItem('goalViewMode', viewMode);
+  }
+
   onMount(async () => {
+    const savedView = localStorage.getItem('goalViewMode');
+    if (savedView === 'grid' || savedView === 'table') {
+      viewMode = savedView;
+    }
+
     calculateCountdowns();
 
     try {
@@ -244,7 +257,7 @@
             Export MD ({selectedGoalIds.size})
           </button>
           <button class="btn-secondary" on:click={clearSelection}>
-            Clear
+            Clear Selections
           </button>
         {:else}
           <button class="btn-secondary" on:click={selectAllGoals}>
@@ -260,6 +273,22 @@
           {showForm ? 'Cancel' : 'New Goal'}
         </button>
       </div>
+    </div>
+
+    <div class="view-toggle-container">
+      <button
+        class="btn-view-toggle"
+        on:click={toggleViewMode}
+        title={viewMode === 'grid' ? 'Switch to Table View' : 'Switch to Grid View'}
+      >
+        {#if viewMode === 'grid'}
+          <List size={18} />
+          Table View
+        {:else}
+          <Grid size={18} />
+          Grid View
+        {/if}
+      </button>
     </div>
 
   {#if error}
@@ -283,6 +312,12 @@
       <h2>No goals yet</h2>
       <p>Start tracking your progress by creating your first goal!</p>
     </div>
+  {:else if viewMode === 'table'}
+    <GoalTable
+      goals={$goals}
+      {selectedGoalIds}
+      on:toggle-selection={(e) => toggleGoalSelection(e.detail)}
+    />
   {:else}
     <div class="goals-grid">
       {#each $goals as goal (goal.id)}
@@ -549,6 +584,33 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .view-toggle-container {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .btn-view-toggle:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
   }
 
   .btn-secondary {

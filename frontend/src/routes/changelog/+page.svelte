@@ -22,6 +22,8 @@
       <div class="change-group">
         <h3>UI Improvements</h3>
         <ul>
+          <li><strong>Table View</strong>: Added new table view mode on homepage with concise overview showing: checkbox, title, progress bar with percentage, goal type, update count, image count, and quarter</li>
+          <li><strong>View Toggle</strong>: New toggle button with text label on dedicated row below header to switch between grid and table views, preference saved in localStorage</li>
           <li><strong>Progress Badge Redesign</strong>: Larger, more motivational progress badges with gradient fill indicator showing completion amount</li>
           <li><strong>Visual Fill Amount</strong>: Badge fills left-to-right with purple gradient based on progress percentage (gray background for incomplete portion)</li>
           <li><strong>Completion Indicators</strong>: 100% completion shows ✨ with green gradient and pulse glow, over 100% shows 🔥 with orange-red gradient and fire pulse animation</li>

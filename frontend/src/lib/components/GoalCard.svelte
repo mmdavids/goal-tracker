@@ -1,57 +1,12 @@
 <script lang="ts">
   import type { Goal } from '$lib/api/client';
-  import { goalsAPI } from '$lib/api/client';
   import ProgressBar from './ProgressBar.svelte';
-  import ConfirmModal from './ConfirmModal.svelte';
-  import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
   import { timeAgo } from '$lib/utils/date';
-  import { Trash2 } from 'lucide-svelte';
-  import { createEventDispatcher } from 'svelte';
 
   export let goal: Goal;
-
-  const dispatch = createEventDispatcher();
-  let showDeleteModal = false;
-  let showNinjaSlice = false;
-
-  function confirmDelete(e: MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    showDeleteModal = true;
-  }
-
-  async function deleteGoal() {
-    try {
-      showDeleteModal = false;
-      showNinjaSlice = true;
-      // Wait for animation to complete before actually deleting
-    } catch (error) {
-      console.error('Failed to delete goal:', error);
-      alert('Failed to delete goal');
-      showDeleteModal = false;
-    }
-  }
-
-  async function onNinjaSliceComplete() {
-    try {
-      await goalsAPI.delete(goal.id);
-      dispatch('deleted');
-    } catch (error) {
-      console.error('Failed to delete goal:', error);
-      alert('Failed to delete goal');
-    }
-  }
-
-  function cancelDelete() {
-    showDeleteModal = false;
-  }
 </script>
 
 <a href="/goal/{goal.id}" class="goal-card">
-  <button class="delete-btn" on:click={confirmDelete} aria-label="Delete goal">
-    <Trash2 size={16} />
-  </button>
-
   <div class="goal-header">
     <div class="goal-title">
       <h3>{goal.title}</h3>
@@ -116,21 +71,6 @@
     </div>
   {/if}
 </a>
-
-{#if showDeleteModal}
-  <ConfirmModal
-    title="Delete Goal"
-    message='Are you sure you want to delete "{goal.title}"? This will delete all progress updates and images. This action cannot be undone.'
-    confirmText="Delete Goal"
-    cancelText="Cancel"
-    onConfirm={deleteGoal}
-    onCancel={cancelDelete}
-  />
-{/if}
-
-{#if showNinjaSlice}
-  <NinjaSliceAnimation onComplete={onNinjaSliceComplete} />
-{/if}
 
 <style>
   .goal-card {
@@ -345,30 +285,4 @@
     font-weight: 500;
   }
 
-  .delete-btn {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: transparent;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 0.375rem;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    opacity: 0;
-    z-index: 10;
-  }
-
-  .goal-card:hover .delete-btn {
-    opacity: 1;
-  }
-
-  .delete-btn:hover {
-    background: #fee2e2;
-    color: #dc2626;
-  }
 </style>
