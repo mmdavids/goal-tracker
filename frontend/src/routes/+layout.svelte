@@ -19,11 +19,11 @@
         </a>
         <a href="/archived" class="nav-link">
           <Archive size={18} />
-          Archived
+          Archive
         </a>
         <a href="/trash" class="nav-link">
           <Trash2 size={18} />
-          Trash
+          Bin
         </a>
         <a href="/settings" class="nav-link">
           <Settings size={18} />
