@@ -8,6 +8,7 @@
   import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
   import { Pencil, Check, X, Trash2, ImagePlus, Save, MessageCircle } from 'lucide-svelte';
   import { createEventDispatcher } from 'svelte';
+  import { animationPreferences } from '$lib/stores/animations';
 
   export let update: ProgressUpdate;
 
@@ -119,7 +120,12 @@
     try {
       showDeleteImageModal = false;
       ninjaSliceAction = 'image';
-      showNinjaSlice = true;
+
+      if ($animationPreferences.deleteAnimation) {
+        showNinjaSlice = true;
+      } else {
+        await onNinjaSliceComplete();
+      }
     } catch (error) {
       console.error('Failed to delete image:', error);
       alert('Failed to delete image');
@@ -134,7 +140,12 @@
     try {
       showDeleteUpdateModal = false;
       ninjaSliceAction = 'update';
-      showNinjaSlice = true;
+
+      if ($animationPreferences.deleteAnimation) {
+        showNinjaSlice = true;
+      } else {
+        await onNinjaSliceComplete();
+      }
     } catch (error) {
       console.error('Failed to delete update:', error);
       alert('Failed to delete update');

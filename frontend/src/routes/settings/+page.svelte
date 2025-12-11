@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goalTypesAPI, configAPI, type GoalType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText } from 'lucide-svelte';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText, Sparkles } from 'lucide-svelte';
   import PathBrowser from '$lib/components/PathBrowser.svelte';
+  import { animationPreferences } from '$lib/stores/animations';
 
   let goalTypes: GoalType[] = [];
   let loading = true;
@@ -44,6 +45,10 @@
 
   const icons = ['🎯', '💼', '🌱', '❤️', '📚', '💰', '🚀', '🏆', '⚡', '🎨', '🔥', '💪'];
   const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#f59e0b', '#ec4899', '#06b6d4'];
+
+  let deleteAnimationEnabled = $animationPreferences.deleteAnimation;
+
+  $: animationPreferences.setDeleteAnimation(deleteAnimationEnabled);
 
   onMount(async () => {
     await loadGoalTypes();
@@ -273,6 +278,33 @@
         <Save size={18} />
         Save Fiscal Year Settings
       </button>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <div class="section-header">
+      <div class="header-with-icon">
+        <Sparkles size={24} />
+        <h2>Animation Preferences</h2>
+      </div>
+    </div>
+
+    <p class="section-description">
+      Configure visual effects and animations throughout the application.
+    </p>
+
+    <div class="animation-settings">
+      <label class="toggle-setting">
+        <div class="toggle-info">
+          <span class="toggle-label">Delete Animation</span>
+          <span class="toggle-description">Show ninja slice animation when deleting items</span>
+        </div>
+        <input
+          type="checkbox"
+          class="toggle-checkbox"
+          bind:checked={deleteAnimationEnabled}
+        />
+      </label>
     </div>
   </section>
 
@@ -978,5 +1010,77 @@
   .changelog-description {
     font-size: 0.875rem;
     color: var(--text-secondary);
+  }
+
+  .animation-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .toggle-setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-setting:hover {
+    background: var(--bg-tertiary);
+  }
+
+  .toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .toggle-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .toggle-description {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+  }
+
+  .toggle-checkbox {
+    width: 44px;
+    height: 24px;
+    appearance: none;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-secondary);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-checkbox:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .toggle-checkbox::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    transition: transform 0.2s;
+  }
+
+  .toggle-checkbox:checked::before {
+    transform: translateX(20px);
   }
 </style>

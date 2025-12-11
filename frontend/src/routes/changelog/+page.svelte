@@ -53,6 +53,14 @@
       <div class="change-group">
         <h3>Features</h3>
         <ul>
+          <li><strong>Animation Preferences</strong>: Added setting to disable delete animation (ninja slice effect)
+            <ul>
+              <li>New "Animation Preferences" section in Settings page</li>
+              <li>Toggle switch to enable/disable delete animations</li>
+              <li>Preference stored in localStorage</li>
+              <li>Applies to both progress update and goal deletions</li>
+            </ul>
+          </li>
           <li><strong>Reflection/Comment Mode</strong>: Added checkbox to progress update forms to create status reflections with zero progress
             <ul>
               <li>Checkbox labeled "Status reflection/comment (no progress)"</li>

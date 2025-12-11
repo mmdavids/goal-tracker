@@ -5,6 +5,7 @@
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import NinjaSliceAnimation from '$lib/components/NinjaSliceAnimation.svelte';
   import { formatDateTime } from '$lib/utils/date';
+  import { animationPreferences } from '$lib/stores/animations';
 
   let deletedGoals: Goal[] = [];
   let loading = true;
@@ -49,7 +50,12 @@
 
     try {
       showDeleteModal = false;
-      showNinjaSlice = true;
+
+      if ($animationPreferences.deleteAnimation) {
+        showNinjaSlice = true;
+      } else {
+        await onNinjaSliceComplete();
+      }
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to delete goal';
       showDeleteModal = false;
