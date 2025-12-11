@@ -76,6 +76,7 @@
       <div class="change-group">
         <h3>UI Improvements</h3>
         <ul>
+          <li><strong>Dark Mode Borders</strong>: Significantly increased border visibility in dark mode (gray-400/gray-300) for much clearer visual separation</li>
           <li><strong>Export Enhancement</strong>: Progress updates with zero progress now display with 💬 comment emoji in markdown/ZIP exports</li>
           <li><strong>Changelog Navigation</strong>: Moved changelog link from main navigation to bottom of Settings page for cleaner navigation bar</li>
           <li><strong>Status Update Styling</strong>: Progress updates with zero progress change are now visually distinct as status reflections/comments
