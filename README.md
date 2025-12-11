@@ -54,19 +54,16 @@ The SQLite database (`database.sqlite`) is automatically created when the backen
 3. **Single User**: Currently configured for single-user mode (default user ID: 1)
    - Multi-user support can be added by implementing authentication
 
-4. **File Storage**: Images are stored in `/backend/uploads` directory
-   - For production, consider using cloud storage (S3, etc.)
-
 ## Potential Next Steps
 
-1. **Authentication**: Add user authentication (JWT, OAuth)
-2. **Search**: Implement search and filtering
-3. **Mobile App**: Build React Native or Flutter mobile version
-4. **Deployment**: Deploy to production (Docker, Vercel, etc.)
-5. **Collaboration**: Allow sharing goals with others
-6. **Integrations**: 
+1. **Integrations**: 
    - Google Calendar integration
    - Notion integration
+2. **Authentication**: Add user authentication (JWT, OAuth)
+3. **Search**: Implement search and filtering
+4. **Mobile App**: Build React Native or Flutter mobile version
+5. **Deployment**: Deploy to production (Docker, Vercel, etc.)
+6. **Collaboration**: Allow sharing goals with others
 
 ## Troubleshooting
 
