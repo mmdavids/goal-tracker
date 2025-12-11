@@ -179,6 +179,22 @@ export const goalsAPI = {
 
     return response.blob();
   },
+
+  async exportToSimpleMarkdown(goalIds: number[]): Promise<Blob> {
+    const response = await fetch(`${API_URL}/goals/export-simple`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ goalIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to export goals as simple markdown');
+    }
+
+    return response.blob();
+  },
 };
 
 // Progress API

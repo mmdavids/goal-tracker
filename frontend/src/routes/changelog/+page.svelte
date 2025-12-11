@@ -17,6 +17,41 @@
 
   <div class="changelog-content">
     <section class="changelog-section">
+      <h2>2025-12-11</h2>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Simple Export Format</strong>: Added simplified markdown export optimized for pasting into Excel
+            <ul>
+              <li>Plain text format with goal titles and numbered updates</li>
+              <li>Format: "Number: (Date) Title - Progress"</li>
+              <li>Updates ordered from oldest to newest</li>
+              <li>New "Simple" export button on dashboard</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>UI Improvements</h3>
+        <ul>
+          <li><strong>Progress Timeline Redesign</strong>: Enhanced timeline view with numbered markers and better visual hierarchy
+            <ul>
+              <li>Added numbered markers (1, 2, 3...) down the left side with decorative dots</li>
+              <li>Larger, more visible numbers and markers</li>
+              <li>Date interstitials showing "[x days later]" between updates that are at least one day apart</li>
+              <li>Speech bubble emoji (💬) marker for status reflection updates instead of blue dot</li>
+              <li>Removed vertical connecting lines for cleaner appearance</li>
+              <li>Timeline numbers count from oldest (1) to newest</li>
+            </ul>
+          </li>
+          <li><strong>Update Display Clarity</strong>: Removed speech bubble icon from progress update titles in timeline view for cleaner presentation (still shown as timeline marker and in exports)</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
       <h2>2025-12-10</h2>
 
       <div class="change-group">

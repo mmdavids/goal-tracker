@@ -358,8 +358,34 @@
         </div>
       {:else}
         <div class="updates-list">
-          {#each updates as update (update.id)}
-            <ProgressUpdateComponent {update} on:updated={loadGoalData} on:deleted={loadGoalData} on:moved={loadGoalData} />
+          {#each updates as update, index (update.id)}
+            {#if index > 0}
+              {@const currentDate = new Date(update.date_achieved || update.created_at)}
+              {@const previousDate = new Date(updates[index - 1].date_achieved || updates[index - 1].created_at)}
+              {@const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())}
+              {@const previousDay = new Date(previousDate.getFullYear(), previousDate.getMonth(), previousDate.getDate())}
+              {@const daysDiff = Math.round((previousDay.getTime() - currentDay.getTime()) / (1000 * 60 * 60 * 24))}
+              {#if daysDiff >= 1}
+                <div class="timeline-interstitial">
+                  <div class="interstitial-line"></div>
+                  <div class="interstitial-text">[{daysDiff} {daysDiff === 1 ? 'day' : 'days'} later]</div>
+                  <div class="interstitial-line"></div>
+                </div>
+              {/if}
+            {/if}
+            <div class="timeline-item">
+              <div class="timeline-number" class:is-comment={update.progress_delta === 0}>
+                <span class="number-text">{updates.length - index}</span>
+                {#if update.progress_delta === 0}
+                  <span class="comment-emoji">💬</span>
+                {:else}
+                  <span class="timeline-dot"></span>
+                {/if}
+              </div>
+              <div class="timeline-content">
+                <ProgressUpdateComponent {update} on:updated={loadGoalData} on:deleted={loadGoalData} on:moved={loadGoalData} />
+              </div>
+            </div>
           {/each}
         </div>
       {/if}
@@ -739,6 +765,70 @@
   .updates-list {
     display: flex;
     flex-direction: column;
+    gap: 0;
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 60px 1fr;
     gap: 1rem;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .timeline-number {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1rem;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .number-text {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+  }
+
+  .timeline-dot {
+    width: 16px;
+    height: 16px;
+    background: var(--color-primary);
+    border: 3px solid var(--bg-secondary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
+
+  .comment-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .timeline-content {
+    width: 100%;
+  }
+
+  .timeline-interstitial {
+    display: grid;
+    grid-template-columns: 60px auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+  }
+
+  .interstitial-text {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .interstitial-line {
+    height: 1px;
+    background: var(--border-primary);
+    opacity: 0.5;
   }
 </style>

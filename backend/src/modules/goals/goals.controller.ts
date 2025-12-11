@@ -110,4 +110,15 @@ export class GoalsController {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     zipStream.pipe(res);
   }
+
+  @Post('export-simple')
+  @Header('Content-Type', 'text/markdown')
+  async exportToSimpleMarkdown(@Body('goalIds') goalIds: number[], @Res() res: Response) {
+    const markdown = await this.goalsService.exportToSimpleMarkdown(goalIds);
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+    const filename = `goals-simple-${timestamp}.md`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(markdown);
+  }
 }

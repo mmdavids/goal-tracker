@@ -5,7 +5,7 @@
   import GoalCard from '$lib/components/GoalCard.svelte';
   import GoalTable from '$lib/components/GoalTable.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
-  import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List } from 'lucide-svelte';
+  import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List, Table } from 'lucide-svelte';
 
   let showForm = false;
   let loading = true;
@@ -183,13 +183,23 @@
     showExportButton = false;
   }
 
-  async function exportSelectedGoals(format: 'markdown' | 'zip' = 'markdown') {
+  async function exportSelectedGoals(format: 'markdown' | 'zip' | 'simple' = 'markdown') {
     if (selectedGoalIds.size === 0) return;
 
     try {
-      const blob = format === 'zip'
-        ? await goalsAPI.exportToZip(Array.from(selectedGoalIds))
-        : await goalsAPI.exportToMarkdown(Array.from(selectedGoalIds));
+      let blob: Blob;
+      let filename: string;
+
+      if (format === 'zip') {
+        blob = await goalsAPI.exportToZip(Array.from(selectedGoalIds));
+        filename = 'goals-export';
+      } else if (format === 'simple') {
+        blob = await goalsAPI.exportToSimpleMarkdown(Array.from(selectedGoalIds));
+        filename = 'goals-simple';
+      } else {
+        blob = await goalsAPI.exportToMarkdown(Array.from(selectedGoalIds));
+        filename = 'goals-export';
+      }
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -197,7 +207,7 @@
       const extension = format === 'zip' ? 'zip' : 'md';
       const now = new Date();
       const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-      a.download = `goals-export-${timestamp}.${extension}`;
+      a.download = `${filename}-${timestamp}.${extension}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -255,6 +265,10 @@
           <button class="btn-export" on:click={() => exportSelectedGoals('markdown')}>
             <FileText size={18} />
             Export MD ({selectedGoalIds.size})
+          </button>
+          <button class="btn-export" on:click={() => exportSelectedGoals('simple')}>
+            <Table size={18} />
+            Simple ({selectedGoalIds.size})
           </button>
           <button class="btn-secondary" on:click={clearSelection}>
             Clear Selections

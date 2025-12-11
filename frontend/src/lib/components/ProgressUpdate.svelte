@@ -6,7 +6,7 @@
   import ImageUpload from './ImageUpload.svelte';
   import ConfirmModal from './ConfirmModal.svelte';
   import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
-  import { Pencil, Check, X, Trash2, ImagePlus, Save, MessageCircle } from 'lucide-svelte';
+  import { Pencil, Check, X, Trash2, ImagePlus, Save } from 'lucide-svelte';
   import { createEventDispatcher } from 'svelte';
   import { animationPreferences } from '$lib/stores/animations';
 
@@ -322,9 +322,6 @@
     <!-- View Mode -->
     <div class="update-header">
       <div class="title-container">
-        {#if update.progress_delta === 0}
-          <MessageCircle size={16} class="status-icon" />
-        {/if}
         <h4>{update.title}</h4>
       </div>
       <div class="header-actions">

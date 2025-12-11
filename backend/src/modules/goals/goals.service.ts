@@ -380,7 +380,6 @@ export class GoalsService {
           const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
           const imageCount = update.image_count > 0 ? `📷 ${update.image_count}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
-          // Add comment emoji for status reflections (0 progress)
           const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
 
           markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
@@ -390,6 +389,52 @@ export class GoalsService {
       }
 
       markdown += `---\n\n`;
+    }
+
+    return markdown;
+  }
+
+  async exportToSimpleMarkdown(goalIds: number[]): Promise<string> {
+    const db = this.databaseService.getDb();
+    let markdown = '';
+
+    const goalsStmt = db.prepare(`
+      SELECT g.*
+      FROM goals g
+      WHERE g.id IN (${goalIds.map(() => '?').join(',')})
+      ORDER BY g.goal_type_id ASC, g.title ASC
+    `);
+    const goals = goalsStmt.all(...goalIds) as any[];
+
+    for (const goal of goals) {
+      if (!goal) continue;
+
+      markdown += `${goal.title}\n\n`;
+
+      const updatesStmt = db.prepare(`
+        SELECT pu.*
+        FROM progress_updates pu
+        WHERE pu.goal_id = ?
+        ORDER BY COALESCE(pu.date_achieved, pu.created_at) ASC
+      `);
+      const updates = updatesStmt.all(goal.id) as any[];
+
+      if (updates.length > 0) {
+        updates.forEach((update, index) => {
+          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          const number = index + 1;
+          const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '0%';
+          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
+
+          markdown += `${number}: (${date}) ${title} - ${progressDelta}\n`;
+          if (update.notes) {
+            markdown += `${update.notes}\n`;
+          }
+          markdown += `\n`;
+        });
+      }
+
+      markdown += `\n`;
     }
 
     return markdown;
@@ -478,7 +523,6 @@ export class GoalsService {
 
           const imageCount = images.length > 0 ? `📷 ${images.length}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
-          // Add comment emoji for status reflections (0 progress)
           const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
 
           markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
