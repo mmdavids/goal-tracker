@@ -18,6 +18,15 @@ export class ProgressService {
       throw new NotFoundException(`Goal with ID ${goalId} not found`);
     }
 
+    // Normalize date_achieved if provided (convert ISO to SQLite format)
+    let dateAchieved = createProgressDto.date_achieved || null;
+    if (dateAchieved) {
+      // Use SQLite's datetime() to normalize any date format
+      const normalizeStmt = db.prepare(`SELECT datetime(?) as normalized`);
+      const normalized = normalizeStmt.get(dateAchieved) as { normalized: string };
+      dateAchieved = normalized.normalized;
+    }
+
     // Insert progress update, defaulting date_achieved to CURRENT_TIMESTAMP if not provided
     const stmt = db.prepare(`
       INSERT INTO progress_updates (goal_id, title, notes, progress_delta, date_achieved)
@@ -29,7 +38,7 @@ export class ProgressService {
       createProgressDto.title,
       createProgressDto.notes || null,
       createProgressDto.progress_delta || 0,
-      createProgressDto.date_achieved || null,
+      dateAchieved,
     );
 
     // Update goal's updated_at timestamp
@@ -58,7 +67,7 @@ export class ProgressService {
       LEFT JOIN images i ON pu.id = i.progress_update_id
       WHERE pu.goal_id = ?
       GROUP BY pu.id
-      ORDER BY COALESCE(pu.date_achieved, pu.created_at) DESC
+      ORDER BY datetime(COALESCE(pu.date_achieved, pu.created_at)) DESC
     `);
 
     const updates = stmt.all(goalId);
@@ -121,8 +130,11 @@ export class ProgressService {
       values.push(updateProgressDto.progress_delta);
     }
     if (updateProgressDto.date_achieved !== undefined) {
+      // Normalize date_achieved (convert ISO to SQLite format)
+      const normalizeStmt = db.prepare(`SELECT datetime(?) as normalized`);
+      const normalized = normalizeStmt.get(updateProgressDto.date_achieved) as { normalized: string };
       fields.push('date_achieved = ?');
-      values.push(updateProgressDto.date_achieved);
+      values.push(normalized.normalized);
     }
 
     values.push(id);
