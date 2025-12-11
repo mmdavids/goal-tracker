@@ -35,6 +35,7 @@
       <div class="change-group">
         <h3>Bug Fixes</h3>
         <ul>
+          <li><strong>Dark Mode Date Picker</strong>: Fixed calendar icon visibility by adding color-scheme property to dark theme</li>
           <li><strong>Progress Timeline Sorting</strong>: Fixed incorrect ordering of progress updates caused by mixed date formats
             <ul>
               <li>Root cause: Creating updates used CURRENT_TIMESTAMP (SQLite format), editing updates sent ISO 8601 strings</li>

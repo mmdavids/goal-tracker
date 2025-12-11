@@ -21,6 +21,7 @@
 }
 
 [data-theme='dark'] {
+  color-scheme: dark;
   --bg-primary: #1f2937;
   --bg-secondary: #111827;
   --bg-tertiary: #374151;
