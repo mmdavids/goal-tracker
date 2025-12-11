@@ -3,7 +3,6 @@ import Database = require('better-sqlite3');
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 import { existsSync, mkdirSync } from 'fs';
-import { DbTableInfo } from './database.types';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
@@ -63,18 +62,7 @@ export class DatabaseService implements OnModuleInit {
   }
 
   private initSchema() {
-    // Check if we need to migrate the images table
-    const tableInfo = this.db.pragma('table_info(images)') as DbTableInfo[];
-    const hasFilepath = tableInfo.some((col) => col.name === 'filepath');
-    const hasOriginalData = tableInfo.some(
-      (col) => col.name === 'original_data',
-    );
-
-    if (hasFilepath && !hasOriginalData) {
-      console.log('🔄 Migrating images table schema...');
-      // Rename old table
-      this.db.exec(`ALTER TABLE images RENAME TO images_old;`);
-    }
+    console.log('📋 Initializing database schema...');
 
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS goal_types (
@@ -153,16 +141,7 @@ export class DatabaseService implements OnModuleInit {
 
     `);
 
-    // If we migrated, copy data from old table (excluding image blobs)
-    if (hasFilepath && !hasOriginalData) {
-      console.log('📋 Copying metadata from old images table...');
-      this.db.exec(`
-        INSERT INTO images (id, progress_update_id, filename, caption, created_at)
-        SELECT id, progress_update_id, filename, caption, created_at
-        FROM images_old;
-      `);
-      console.log('✅ Images table migration complete!');
-    }
+    console.log('✅ Database schema initialized');
   }
 
   onModuleDestroy() {
