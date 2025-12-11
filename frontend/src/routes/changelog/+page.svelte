@@ -17,6 +17,71 @@
 
   <div class="changelog-content">
     <section class="changelog-section">
+      <h2>2025-12-10</h2>
+
+      <div class="change-group">
+        <h3>Technical Improvements</h3>
+        <ul>
+          <li><strong>Database Service Refactoring</strong>: Removed migration logic, simplified to assume fresh database installation
+            <ul>
+              <li>Removed images table migration code</li>
+              <li>Removed date normalization migrations</li>
+              <li>Cleaner, more maintainable codebase</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>Bug Fixes</h3>
+        <ul>
+          <li><strong>Progress Timeline Sorting</strong>: Fixed incorrect ordering of progress updates caused by mixed date formats
+            <ul>
+              <li>Root cause: Creating updates used CURRENT_TIMESTAMP (SQLite format), editing updates sent ISO 8601 strings</li>
+              <li>Solution implemented:
+                <ul>
+                  <li>Backend normalizes all incoming dates to SQLite format before storage</li>
+                  <li>Query uses datetime() function for sorting to handle any edge cases</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Reflection/Comment Mode</strong>: Added checkbox to progress update forms to create status reflections with zero progress
+            <ul>
+              <li>Checkbox labeled "Status reflection/comment (no progress)"</li>
+              <li>When checked, automatically sets progress to 0</li>
+              <li>When progress is manually set to 0, checkbox is automatically checked</li>
+              <li>Progress input remains enabled to allow unchecking by changing the value</li>
+              <li>Available in both add update and edit update forms</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>UI Improvements</h3>
+        <ul>
+          <li><strong>Export Enhancement</strong>: Progress updates with zero progress now display with 💬 comment emoji in markdown/ZIP exports</li>
+          <li><strong>Changelog Navigation</strong>: Moved changelog link from main navigation to bottom of Settings page for cleaner navigation bar</li>
+          <li><strong>Status Update Styling</strong>: Progress updates with zero progress change are now visually distinct as status reflections/comments
+            <ul>
+              <li>Dashed border and secondary background color</li>
+              <li>Message bubble icon indicator</li>
+              <li>Italic title styling with reduced font weight</li>
+              <li>Reduced opacity (0.85) for subtle appearance</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
       <h2>2025-12-05</h2>
 
       <div class="change-group">
