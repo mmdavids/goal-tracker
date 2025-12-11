@@ -6,7 +6,7 @@
   import ImageUpload from './ImageUpload.svelte';
   import ConfirmModal from './ConfirmModal.svelte';
   import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
-  import { Pencil, Check, X, Trash2, ImagePlus, Save } from 'lucide-svelte';
+  import { Pencil, Check, X, Trash2, ImagePlus, Save, MessageCircle } from 'lucide-svelte';
   import { createEventDispatcher } from 'svelte';
 
   export let update: ProgressUpdate;
@@ -21,6 +21,7 @@
   // Convert UTC to local time for datetime-local input
   let editDateAchieved = toDateTimeLocalString(update.date_achieved || update.created_at);
   let newImages: File[] = [];
+  let isReflection = update.progress_delta === 0;
   let selectedImage: { url: string; caption: string | null } | null = null;
   let isSaving = false;
   let showDeleteUpdateModal = false;
@@ -52,6 +53,7 @@
     editDateAchieved = toDateTimeLocalString(update.date_achieved || update.created_at);
     selectedGoalId = update.goal_id;
     newImages = [];
+    isReflection = update.progress_delta === 0;
 
     // Load available goals
     try {
@@ -181,7 +183,7 @@
   }
 </script>
 
-<div class="progress-update">
+<div class="progress-update" class:status-update={update.progress_delta === 0}>
   {#if isEditing}
     <!-- Edit Mode -->
     <div class="edit-form">
@@ -206,11 +208,36 @@
       </div>
 
       <div class="form-group">
+        <label class="checkbox-label">
+          <input
+            id="isReflection"
+            type="checkbox"
+            checked={isReflection}
+            on:change={(e) => {
+              isReflection = e.currentTarget.checked;
+              if (isReflection) {
+                editProgressDelta = 0;
+              }
+            }}
+          />
+          <span>Status reflection/comment (no progress)</span>
+        </label>
+      </div>
+
+      <div class="form-group">
         <label for="delta">Progress Change (%)</label>
         <input
           id="delta"
           type="number"
           bind:value={editProgressDelta}
+          on:input={(e) => {
+            const val = parseInt(e.currentTarget.value);
+            if (val === 0) {
+              isReflection = true;
+            } else if (isReflection) {
+              isReflection = false;
+            }
+          }}
           min="0"
         />
       </div>
@@ -283,7 +310,12 @@
   {:else}
     <!-- View Mode -->
     <div class="update-header">
-      <h4>{update.title}</h4>
+      <div class="title-container">
+        {#if update.progress_delta === 0}
+          <MessageCircle size={16} class="status-icon" />
+        {/if}
+        <h4>{update.title}</h4>
+      </div>
       <div class="header-actions">
         {#if update.progress_delta > 0}
           <span class="delta">+{update.progress_delta}%</span>
@@ -320,7 +352,7 @@
           <div class="image-container">
             <button
               class="image-button"
-              on:click={() => openImage(image.filename, image.caption)}
+              on:click={() => openImage(image.filename, image.caption || null)}
               aria-label="View full size image"
             >
               <img src={imagesAPI.getUrl(image.filename, true)} alt={image.caption || 'Evidence'} />
@@ -381,11 +413,28 @@
     padding: 1.25rem;
   }
 
+  .progress-update.status-update {
+    background: var(--bg-secondary);
+    border: 1px dashed var(--border-secondary);
+    opacity: 0.85;
+  }
+
   .update-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 0.75rem;
+  }
+
+  .title-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .title-container :global(.status-icon) {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
   }
 
   .header-actions {
@@ -399,6 +448,11 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
+  }
+
+  .status-update h4 {
+    font-weight: 500;
+    font-style: italic;
   }
 
   .delta {
@@ -657,5 +711,27 @@
   .btn-secondary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    cursor: pointer;
+    user-select: none;
+    padding: 0;
+  }
+
+  .checkbox-label input[type='checkbox'] {
+    width: auto;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+
+  .checkbox-label span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
   }
 </style>

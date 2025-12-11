@@ -380,8 +380,10 @@ export class GoalsService {
           const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
           const imageCount = update.image_count > 0 ? `📷 ${update.image_count}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
+          // Add comment emoji for status reflections (0 progress)
+          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
 
-          markdown += `| ${number} | ${date} | ${update.title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+          markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
         });
 
         markdown += `\n`;
@@ -476,8 +478,10 @@ export class GoalsService {
 
           const imageCount = images.length > 0 ? `📷 ${images.length}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
+          // Add comment emoji for status reflections (0 progress)
+          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
 
-          markdown += `| ${number} | ${date} | ${update.title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+          markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
 
           // Add images to zip
           for (const image of images) {

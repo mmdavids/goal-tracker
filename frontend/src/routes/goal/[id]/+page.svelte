@@ -29,6 +29,7 @@
   let updateNotes = '';
   let progressDelta = 10;
   let uploadFiles: File[] = [];
+  let isReflection = false;
 
   const goalId = parseInt($page.params.id);
 
@@ -81,6 +82,7 @@
       updateNotes = '';
       progressDelta = 10;
       uploadFiles = [];
+      isReflection = false;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to add update';
     }
@@ -299,8 +301,40 @@
         </div>
 
         <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              id="isReflectionNew"
+              type="checkbox"
+              checked={isReflection}
+              on:change={(e) => {
+                isReflection = e.currentTarget.checked;
+                if (isReflection) {
+                  progressDelta = 0;
+                }
+              }}
+            />
+            <span>Status reflection/comment (no progress)</span>
+          </label>
+        </div>
+
+        <div class="form-group">
           <label for="delta">Progress Increase: {progressDelta}%</label>
-          <input type="range" id="delta" bind:value={progressDelta} min="0" max="50" step="5" />
+          <input
+            type="range"
+            id="delta"
+            bind:value={progressDelta}
+            on:input={(e) => {
+              const val = parseInt(e.currentTarget.value);
+              if (val === 0) {
+                isReflection = true;
+              } else if (isReflection) {
+                isReflection = false;
+              }
+            }}
+            min="0"
+            max="50"
+            step="5"
+          />
         </div>
 
         <div class="form-group">
@@ -661,6 +695,25 @@
 
   input[type='range'] {
     width: 100%;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkbox-label input[type='checkbox'] {
+    width: auto;
+    cursor: pointer;
+  }
+
+  .checkbox-label span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
   }
 
   .updates-section {
