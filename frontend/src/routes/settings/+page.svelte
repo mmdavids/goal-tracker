@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goalTypesAPI, configAPI, type GoalType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save } from 'lucide-svelte';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText } from 'lucide-svelte';
   import PathBrowser from '$lib/components/PathBrowser.svelte';
 
   let goalTypes: GoalType[] = [];
@@ -331,6 +331,16 @@
         Save Database Path
       </button>
     </div>
+  </section>
+
+  <section class="changelog-link-section">
+    <a href="/changelog" class="changelog-link">
+      <FileText size={20} />
+      <div class="changelog-link-text">
+        <span class="changelog-title">View Changelog</span>
+        <span class="changelog-description">See recent updates and changes</span>
+      </div>
+    </a>
   </section>
 </div>
 
@@ -922,5 +932,51 @@
     border-radius: 8px;
     font-size: 0.875rem;
     margin-bottom: 1rem;
+  }
+
+  .changelog-link-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-primary);
+  }
+
+  .changelog-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .changelog-link:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .changelog-link :global(svg) {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  .changelog-link-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .changelog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .changelog-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
   }
 </style>
