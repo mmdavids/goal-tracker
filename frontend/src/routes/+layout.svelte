@@ -2,6 +2,7 @@
   import CelebrationAnimation from '$lib/components/CelebrationAnimation.svelte';
   import { Archive, Trash2, Moon, Sun, Settings, Home } from 'lucide-svelte';
   import { theme } from '$lib/stores/theme';
+  import { terminology } from '$lib/stores/terminology';
   import '../app.css';
 </script>
 
@@ -10,7 +11,7 @@
     <div class="nav-content">
       <a href="/" class="logo">
         <span class="logo-emoji">🎯</span>
-        <span class="logo-text">Goal Tracker</span>
+        <span class="logo-text">{$terminology.appName}</span>
       </a>
       <div class="nav-links">
         <a href="/" class="nav-link">

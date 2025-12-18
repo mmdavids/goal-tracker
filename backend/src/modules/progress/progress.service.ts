@@ -29,8 +29,8 @@ export class ProgressService {
 
     // Insert progress update, defaulting date_achieved to CURRENT_TIMESTAMP if not provided
     const stmt = db.prepare(`
-      INSERT INTO progress_updates (goal_id, title, notes, progress_delta, date_achieved)
-      VALUES (?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))
+      INSERT INTO progress_updates (goal_id, title, notes, progress_delta, date_achieved, progress_update_type_id)
+      VALUES (?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP), ?)
     `);
 
     const result = stmt.run(
@@ -39,6 +39,7 @@ export class ProgressService {
       createProgressDto.notes || null,
       createProgressDto.progress_delta || 0,
       dateAchieved,
+      createProgressDto.progress_update_type_id || null,
     );
 
     // Update goal's updated_at timestamp
@@ -62,12 +63,15 @@ export class ProgressService {
 
     const stmt = db.prepare(`
       SELECT pu.*,
-        COUNT(DISTINCT i.id) as image_count
+        COUNT(DISTINCT i.id) as image_count,
+        put.name as progress_update_type_name,
+        put.emoji as progress_update_type_emoji
       FROM progress_updates pu
       LEFT JOIN images i ON pu.id = i.progress_update_id
+      LEFT JOIN progress_update_types put ON pu.progress_update_type_id = put.id
       WHERE pu.goal_id = ?
       GROUP BY pu.id
-      ORDER BY datetime(COALESCE(pu.date_achieved, pu.created_at)) DESC
+      ORDER BY COALESCE(pu.date_achieved, pu.created_at) DESC
     `);
 
     const updates = stmt.all(goalId);
@@ -87,9 +91,12 @@ export class ProgressService {
     const db = this.databaseService.getDb();
     const stmt = db.prepare(`
       SELECT pu.*,
-        COUNT(DISTINCT i.id) as image_count
+        COUNT(DISTINCT i.id) as image_count,
+        put.name as progress_update_type_name,
+        put.emoji as progress_update_type_emoji
       FROM progress_updates pu
       LEFT JOIN images i ON pu.id = i.progress_update_id
+      LEFT JOIN progress_update_types put ON pu.progress_update_type_id = put.id
       WHERE pu.id = ?
       GROUP BY pu.id
     `);
@@ -135,6 +142,10 @@ export class ProgressService {
       const normalized = normalizeStmt.get(updateProgressDto.date_achieved) as { normalized: string };
       fields.push('date_achieved = ?');
       values.push(normalized.normalized);
+    }
+    if (updateProgressDto.progress_update_type_id !== undefined) {
+      fields.push('progress_update_type_id = ?');
+      values.push(updateProgressDto.progress_update_type_id);
     }
 
     values.push(id);

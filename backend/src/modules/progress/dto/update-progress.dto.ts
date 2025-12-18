@@ -18,4 +18,8 @@ export class UpdateProgressDto {
   @IsDateString()
   @IsOptional()
   date_achieved?: string;
+
+  @IsInt()
+  @IsOptional()
+  progress_update_type_id?: number;
 }

@@ -1,9 +1,10 @@
 <script lang="ts">
   import { FileText } from 'lucide-svelte';
+  import { terminology } from '$lib/stores/terminology';
 </script>
 
 <svelte:head>
-  <title>Changelog - Goal Tracker</title>
+  <title>Changelog - {$terminology.appName}</title>
 </svelte:head>
 
 <div class="changelog-page">
@@ -16,6 +17,76 @@
   </div>
 
   <div class="changelog-content">
+    <section class="changelog-section">
+      <h2>2025-12-18</h2>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Customizable Application Name</strong>: Personalize the application name throughout the interface
+            <ul>
+              <li>Configure custom application name in Settings → Terminology</li>
+              <li>Replaces "Goal Tracker" in navigation bar, page titles, and browser tabs</li>
+              <li>Works seamlessly with custom goal terminology</li>
+              <li>Settings persist in browser localStorage</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>UI Improvements</h3>
+        <ul>
+          <li><strong>Collapsible Settings Sections</strong>: Made all settings sections collapsible for better organization
+            <ul>
+              <li>All sections start collapsed by default for a cleaner, more manageable settings page</li>
+              <li>Click section headers to expand/collapse</li>
+              <li>Rotating chevron icon indicates expansion state</li>
+              <li>Smooth slide-down animation when expanding sections</li>
+              <li>Action buttons hidden in collapsed state</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
+      <h2>2025-12-17</h2>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Customizable Terminology</strong>: Personalize what "Goals" are called throughout the application
+            <ul>
+              <li>Configure custom singular and plural terms in Settings → Terminology</li>
+              <li>Change "Goal" to "Project", "Category", "Event", or anything else</li>
+              <li>All user-facing text updates automatically including page titles, buttons, forms, and labels</li>
+              <li>Settings stored in browser localStorage</li>
+              <li>Backend implementation remains unchanged for data compatibility</li>
+            </ul>
+          </li>
+          <li><strong>Progress Update Types</strong>: Added user-definable types for progress updates with configurable emojis
+            <ul>
+              <li>Create custom progress update types (e.g., "Completed Task", "Milestone", "Note")</li>
+              <li>Each type has a name, description, and emoji</li>
+              <li>Optional field - existing updates continue to work without a type</li>
+              <li>Type emoji replaces the numbered marker in the timeline for visual categorization</li>
+              <li>Type name displays next to the date in the update footer</li>
+              <li>Type selector available when creating or editing progress updates</li>
+              <li>Manage types in Settings page (similar to Goal Types)</li>
+              <li>Cannot delete types that are in use by existing updates</li>
+            </ul>
+          </li>
+          <li><strong>Expanded Emoji Selection</strong>: Added 70+ emojis for both goal types and progress update types
+            <ul>
+              <li>Goal types now have 56 icons covering health, relationships, home, travel, learning, work, creativity, finance, and hobbies</li>
+              <li>Progress update types now have 85 emojis for completion, celebration, status, alerts, planning, communication, documentation, testing, meetings, calendar/scheduling, time tracking, and task management (checkboxes, pins, bookmarks)</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <section class="changelog-section">
       <h2>2025-12-11</h2>
 

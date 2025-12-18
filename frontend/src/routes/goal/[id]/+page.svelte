@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { goalsAPI, progressAPI, imagesAPI, type Goal, type ProgressUpdate } from '$lib/api/client';
+  import { goalsAPI, progressAPI, imagesAPI, progressUpdateTypesAPI, type Goal, type ProgressUpdate, type ProgressUpdateType } from '$lib/api/client';
   import ProgressBar from '$lib/components/ProgressBar.svelte';
   import ProgressUpdateComponent from '$lib/components/ProgressUpdate.svelte';
   import ImageUpload from '$lib/components/ImageUpload.svelte';
@@ -11,16 +11,20 @@
   import GoalForm from '$lib/components/GoalForm.svelte';
   import PadlockAnimation from '$lib/components/PadlockAnimation.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
-  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save } from 'lucide-svelte';
+  import { calculateTimeProgress, formatDate } from '$lib/utils/date';
+  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save, MessageSquare } from 'lucide-svelte';
+  import { terminology } from '$lib/stores/terminology';
 
   let goal: Goal | null = null;
   let updates: ProgressUpdate[] = [];
+  let progressUpdateTypes: ProgressUpdateType[] = [];
   let loading = true;
   let error = '';
   let showUpdateForm = false;
   let showDeleteModal = false;
   let showArchiveModal = false;
   let showQuickWinModal = false;
+  let showAddNoteModal = false;
   let isEditingGoal = false;
   let showPadlockAnimation = false;
 
@@ -30,12 +34,26 @@
   let progressDelta = 10;
   let uploadFiles: File[] = [];
   let isReflection = false;
+  let selectedProgressUpdateTypeId: number | null = null;
 
   const goalId = parseInt($page.params.id);
 
+  $: timeProgress = goal?.target_date ? calculateTimeProgress(goal.created_at, goal.target_date) : null;
+
   onMount(async () => {
-    await loadGoalData();
+    await Promise.all([
+      loadGoalData(),
+      loadProgressUpdateTypes()
+    ]);
   });
+
+  async function loadProgressUpdateTypes() {
+    try {
+      progressUpdateTypes = await progressUpdateTypesAPI.getAll();
+    } catch (err) {
+      console.error('Failed to load progress update types:', err);
+    }
+  }
 
   async function loadGoalData() {
     try {
@@ -45,7 +63,7 @@
         progressAPI.getAll(goalId),
       ]);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load goal';
+      error = err instanceof Error ? err.message : `Failed to load ${$terminology.goal.singular.toLowerCase()}`;
     } finally {
       loading = false;
     }
@@ -61,6 +79,7 @@
         title: updateTitle,
         notes: updateNotes || undefined,
         progress_delta: progressDelta,
+        progress_update_type_id: selectedProgressUpdateTypeId || undefined,
       });
 
       // Upload images if any
@@ -83,6 +102,7 @@
       progressDelta = 10;
       uploadFiles = [];
       isReflection = false;
+      selectedProgressUpdateTypeId = null;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to add update';
     }
@@ -112,6 +132,26 @@
     }
   }
 
+  function handleAddNote() {
+    showAddNoteModal = true;
+  }
+
+  async function confirmAddNote(title: string) {
+    showAddNoteModal = false;
+
+    try {
+      error = '';
+      await progressAPI.create(goalId, {
+        title,
+        progress_delta: 0,
+      });
+
+      await loadGoalData();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to add note';
+    }
+  }
+
   function confirmDeleteGoal() {
     showDeleteModal = true;
   }
@@ -124,7 +164,7 @@
       showDeleteModal = false;
       goto('/');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete goal';
+      error = err instanceof Error ? err.message : `Failed to delete ${$terminology.goal.singular.toLowerCase()}`;
       showDeleteModal = false;
     }
   }
@@ -138,7 +178,7 @@
       await loadGoalData();
       isEditingGoal = false;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to update goal';
+      error = err instanceof Error ? err.message : `Failed to update ${$terminology.goal.singular.toLowerCase()}`;
     }
   }
 
@@ -162,7 +202,7 @@
         showPadlockAnimation = true;
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to archive/unarchive goal';
+      error = err instanceof Error ? err.message : `Failed to archive/unarchive ${$terminology.goal.singular.toLowerCase()}`;
       showArchiveModal = false;
     }
   }
@@ -174,14 +214,14 @@
       await goalsAPI.archive(goal.id);
       goto('/');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to archive goal';
+      error = err instanceof Error ? err.message : `Failed to archive ${$terminology.goal.singular.toLowerCase()}`;
       showPadlockAnimation = false;
     }
   }
 </script>
 
 <svelte:head>
-  <title>{goal?.title || 'Goal'} - Goal Tracker</title>
+  <title>{goal?.title || $terminology.goal.singular} - {$terminology.appName}</title>
 </svelte:head>
 
 {#if loading}
@@ -208,7 +248,7 @@
         {:else}
           <button class="btn-edit" on:click={() => isEditingGoal = true} disabled={goal.status === 'completed'}>
             <Pencil size={18} />
-            Edit Goal
+            Edit {$terminology.goal.singular}
           </button>
           <button class="btn-archive" on:click={confirmArchiveGoal}>
             <Archive size={18} />
@@ -216,7 +256,7 @@
           </button>
           <button class="delete-goal-btn" on:click={confirmDeleteGoal}>
             <Trash2 size={18} />
-            Delete Goal
+            Delete {$terminology.goal.singular}
           </button>
         {/if}
       </div>
@@ -224,7 +264,7 @@
 
     {#if isEditingGoal}
       <div class="edit-goal-form">
-        <h2>Edit Goal</h2>
+        <h2>Edit {$terminology.goal.singular}</h2>
         <GoalForm
           title={goal.title}
           description={goal.description || ''}
@@ -257,6 +297,20 @@
       {/if}
 
       <ProgressBar progress={goal.progress} size="lg" />
+
+      {#if timeProgress !== null}
+        <div class="time-progress">
+          <div class="time-progress-label">
+            <span class="label-text">Time elapsed</span>
+            <span class="progress-percent">{timeProgress}%</span>
+          </div>
+          <div class="time-progress-bar">
+            <div class="time-progress-fill" style="width: {timeProgress}%"></div>
+            <div class="time-marker time-marker-start" title="Created: {formatDate(goal.created_at)}"></div>
+            <div class="time-marker time-marker-end" title="Target: {formatDate(goal.target_date)}"></div>
+          </div>
+        </div>
+      {/if}
     {/if}
 
     {#if error}
@@ -272,6 +326,10 @@
           <Plus size={20} />
           Add Update
         {/if}
+      </button>
+      <button class="btn-secondary" on:click={handleAddNote}>
+        <MessageSquare size={20} />
+        Add Note
       </button>
       <button class="btn-secondary" on:click={handleQuickWin}>⚡ Quick Win (+10%)</button>
     </div>
@@ -298,6 +356,21 @@
             placeholder="Add details about your progress..."
             rows="3"
           />
+        </div>
+
+        <div class="form-group">
+          <label for="typeSelect">Type (optional)</label>
+          <select
+            id="typeSelect"
+            bind:value={selectedProgressUpdateTypeId}
+          >
+            <option value={null}>No type</option>
+            {#each progressUpdateTypes as type}
+              <option value={type.id}>
+                {type.emoji} {type.name}
+              </option>
+            {/each}
+          </select>
         </div>
 
         <div class="form-group">
@@ -374,9 +447,11 @@
               {/if}
             {/if}
             <div class="timeline-item">
-              <div class="timeline-number" class:is-comment={update.progress_delta === 0}>
+              <div class="timeline-number" class:is-comment={update.progress_delta === 0} class:has-type-emoji={update.progress_update_type_emoji}>
                 <span class="number-text">{updates.length - index}</span>
-                {#if update.progress_delta === 0}
+                {#if update.progress_update_type_emoji}
+                  <span class="type-emoji">{update.progress_update_type_emoji}</span>
+                {:else if update.progress_delta === 0}
                   <span class="comment-emoji">💬</span>
                 {:else}
                   <span class="timeline-dot"></span>
@@ -395,9 +470,9 @@
 
 {#if showDeleteModal && goal}
   <ConfirmModal
-    title="Delete Goal"
+    title="Delete {$terminology.goal.singular}"
     message='Are you sure you want to delete "{goal.title}"? This will move it to the trash bin where you can restore or permanently delete it.'
-    confirmText="Delete Goal"
+    confirmText="Delete {$terminology.goal.singular}"
     cancelText="Cancel"
     onConfirm={handleDeleteGoal}
     onCancel={() => showDeleteModal = false}
@@ -406,11 +481,11 @@
 
 {#if showArchiveModal && goal}
   <ConfirmModal
-    title={goal.status === 'completed' ? 'Unarchive Goal' : 'Archive Goal'}
+    title={goal.status === 'completed' ? `Unarchive ${$terminology.goal.singular}` : `Archive ${$terminology.goal.singular}`}
     message={goal.status === 'completed'
-      ? `Are you sure you want to unarchive "${goal.title}"? This will set the goal back to active status.`
-      : `Are you sure you want to mark "${goal.title}" as completed? This will archive the goal and set its status to completed.`}
-    confirmText={goal.status === 'completed' ? 'Unarchive Goal' : 'Archive Goal'}
+      ? `Are you sure you want to unarchive "${goal.title}"? This will set the ${$terminology.goal.singular.toLowerCase()} back to active status.`
+      : `Are you sure you want to mark "${goal.title}" as completed? This will archive the ${$terminology.goal.singular.toLowerCase()} and set its status to completed.`}
+    confirmText={goal.status === 'completed' ? `Unarchive ${$terminology.goal.singular}` : `Archive ${$terminology.goal.singular}`}
     cancelText="Cancel"
     onConfirm={handleArchiveGoal}
     onCancel={() => showArchiveModal = false}
@@ -431,6 +506,19 @@
     cancelText="Cancel"
     onConfirm={confirmQuickWin}
     onCancel={() => showQuickWinModal = false}
+  />
+{/if}
+
+{#if showAddNoteModal}
+  <InputModal
+    title="Add Note"
+    message="What do you want to note?"
+    placeholder="Enter note title"
+    defaultValue=""
+    confirmText="Add"
+    cancelText="Cancel"
+    onConfirm={confirmAddNote}
+    onCancel={() => showAddNoteModal = false}
   />
 {/if}
 
@@ -623,6 +711,77 @@
     white-space: pre-line;
   }
 
+  .time-progress {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .time-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .label-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .progress-percent {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .time-progress-bar {
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 999px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .time-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .time-marker {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 2px solid var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .time-marker:hover {
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+  }
+
+  .time-marker-start {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .time-marker-end {
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+
   .error-banner {
     background: #fee2e2;
     color: #991b1b;
@@ -802,6 +961,11 @@
   }
 
   .comment-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .type-emoji {
     font-size: 2rem;
     line-height: 1;
   }

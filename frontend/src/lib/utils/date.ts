@@ -66,3 +66,23 @@ export function toDateTimeLocalString(date: string | Date): string {
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+
+// Calculate the percentage of time elapsed between start date and target date
+export function calculateTimeProgress(startDate: string | Date, targetDate: string | Date): number {
+  const start = parseDate(startDate).getTime();
+  const target = parseDate(targetDate).getTime();
+  const now = new Date().getTime();
+
+  // If target is in the past, return 100%
+  if (now >= target) return 100;
+
+  // If start is in the future, return 0%
+  if (now <= start) return 0;
+
+  // Calculate percentage
+  const totalTime = target - start;
+  const elapsedTime = now - start;
+  const percentage = (elapsedTime / totalTime) * 100;
+
+  return Math.min(Math.max(Math.round(percentage), 0), 100);
+}

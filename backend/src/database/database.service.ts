@@ -55,6 +55,7 @@ export class DatabaseService implements OnModuleInit {
 
   onModuleInit() {
     this.initSchema();
+    this.runMigrations();
   }
 
   getDb(): Database.Database {
@@ -71,6 +72,14 @@ export class DatabaseService implements OnModuleInit {
         description TEXT,
         color TEXT DEFAULT '#3b82f6',
         icon TEXT DEFAULT '🎯',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS progress_update_types (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        description TEXT,
+        emoji TEXT DEFAULT '📝',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -95,12 +104,14 @@ export class DatabaseService implements OnModuleInit {
       CREATE TABLE IF NOT EXISTS progress_updates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         goal_id INTEGER NOT NULL,
+        progress_update_type_id INTEGER,
         title TEXT NOT NULL,
         notes TEXT,
         progress_delta INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         date_achieved DATETIME,
-        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
+        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE,
+        FOREIGN KEY (progress_update_type_id) REFERENCES progress_update_types(id) ON DELETE SET NULL
       );
 
       CREATE TABLE IF NOT EXISTS images (
@@ -142,6 +153,27 @@ export class DatabaseService implements OnModuleInit {
     `);
 
     console.log('✅ Database schema initialized');
+  }
+
+  private runMigrations() {
+    console.log('🔄 Running migrations...');
+
+    // Check if progress_update_type_id column exists in progress_updates
+    const tableInfo = this.db.pragma('table_info(progress_updates)') as Array<{ name: string }>;
+    const hasProgressUpdateTypeColumn = tableInfo.some(
+      (col) => col.name === 'progress_update_type_id'
+    );
+
+    if (!hasProgressUpdateTypeColumn) {
+      console.log('➕ Adding progress_update_type_id column to progress_updates table');
+      this.db.exec(`
+        ALTER TABLE progress_updates
+        ADD COLUMN progress_update_type_id INTEGER
+        REFERENCES progress_update_types(id) ON DELETE SET NULL;
+      `);
+    }
+
+    console.log('✅ Migrations completed');
   }
 
   onModuleDestroy() {

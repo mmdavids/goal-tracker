@@ -32,15 +32,27 @@ export interface DbGoal {
   image_count?: number;
 }
 
+export interface DbProgressUpdateType {
+  id: number;
+  name: string;
+  description: string | null;
+  emoji: string;
+  created_at: string;
+  update_count?: number;
+}
+
 export interface DbProgressUpdate {
   id: number;
   goal_id: number;
+  progress_update_type_id: number | null;
   title: string;
   notes: string | null;
   progress_delta: number;
   created_at: string;
   date_achieved: string | null;
   image_count?: number;
+  progress_update_type_name?: string;
+  progress_update_type_emoji?: string;
 }
 
 export interface DbImage {

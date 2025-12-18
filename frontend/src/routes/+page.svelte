@@ -6,6 +6,7 @@
   import GoalTable from '$lib/components/GoalTable.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
   import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List, Table } from 'lucide-svelte';
+  import { terminology } from '$lib/stores/terminology';
 
   let showForm = false;
   let loading = true;
@@ -126,7 +127,7 @@
     try {
       await goals.load('active');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load goals';
+      error = err instanceof Error ? err.message : `Failed to load ${$terminology.goal.plural.toLowerCase()}`;
     } finally {
       loading = false;
     }
@@ -147,7 +148,7 @@
       await goals.add(event.detail);
       showForm = false;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to create goal';
+      error = err instanceof Error ? err.message : `Failed to create ${$terminology.goal.singular.toLowerCase()}`;
     }
   }
 
@@ -214,13 +215,13 @@
       document.body.removeChild(a);
       clearSelection();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to export goals';
+      error = err instanceof Error ? err.message : `Failed to export ${$terminology.goal.plural.toLowerCase()}`;
     }
   }
 </script>
 
 <svelte:head>
-  <title>Goal Tracker - Dashboard</title>
+  <title>{$terminology.goal.plural} - {$terminology.appName}</title>
 </svelte:head>
 
 <div class="page-layout">
@@ -255,7 +256,7 @@
   <!-- Main content -->
   <div class="dashboard">
     <div class="header">
-      <h1>My Goals</h1>
+      <h1>My {$terminology.goal.plural}</h1>
       <div class="header-actions">
         {#if showExportButton}
           <button class="btn-export" on:click={() => exportSelectedGoals('zip')}>
@@ -284,7 +285,7 @@
           {:else}
             <Plus size={20} />
           {/if}
-          {showForm ? 'Cancel' : 'New Goal'}
+          {showForm ? 'Cancel' : `New ${$terminology.goal.singular}`}
         </button>
       </div>
     </div>
@@ -313,18 +314,18 @@
 
   {#if showForm}
     <div class="form-container">
-      <h2>Create New Goal</h2>
+      <h2>Create New {$terminology.goal.singular}</h2>
       <GoalForm on:submit={handleCreateGoal} />
     </div>
   {/if}
 
   {#if loading}
-    <div class="loading">Loading goals...</div>
+    <div class="loading">Loading {$terminology.goal.plural.toLowerCase()}...</div>
   {:else if $goals.length === 0}
     <div class="empty-state">
       <div class="empty-icon">🎯</div>
-      <h2>No goals yet</h2>
-      <p>Start tracking your progress by creating your first goal!</p>
+      <h2>No {$terminology.goal.plural.toLowerCase()} yet</h2>
+      <p>Start tracking your progress by creating your first {$terminology.goal.singular.toLowerCase()}!</p>
     </div>
   {:else if viewMode === 'table'}
     <GoalTable
@@ -356,7 +357,7 @@
       <div class="archived-header">
         <div class="archived-title">
           <Archive size={24} />
-          <h2>Archived Goals</h2>
+          <h2>Archived {$terminology.goal.plural}</h2>
         </div>
         <a href="/archived" class="view-all-link">View All →</a>
       </div>

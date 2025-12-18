@@ -12,6 +12,15 @@ export interface GoalType {
   goal_count?: number;
 }
 
+export interface ProgressUpdateType {
+  id: number;
+  name: string;
+  description?: string;
+  emoji: string;
+  created_at: string;
+  update_count?: number;
+}
+
 export interface Goal {
   id: number;
   goal_type_id?: number;
@@ -37,6 +46,9 @@ export interface Goal {
 export interface ProgressUpdate {
   id: number;
   goal_id: number;
+  progress_update_type_id?: number;
+  progress_update_type_name?: string;
+  progress_update_type_emoji?: string;
   title: string;
   notes?: string;
   progress_delta: number;
@@ -312,6 +324,35 @@ export const goalTypesAPI = {
 
   async delete(id: number): Promise<void> {
     return fetchAPI(`/goal-types/${id}`, { method: 'DELETE' });
+  },
+};
+
+// Progress Update Types API
+export const progressUpdateTypesAPI = {
+  async getAll(): Promise<ProgressUpdateType[]> {
+    return fetchAPI('/progress-update-types');
+  },
+
+  async getOne(id: number): Promise<ProgressUpdateType> {
+    return fetchAPI(`/progress-update-types/${id}`);
+  },
+
+  async create(data: Partial<ProgressUpdateType>): Promise<ProgressUpdateType> {
+    return fetchAPI('/progress-update-types', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: number, data: Partial<ProgressUpdateType>): Promise<ProgressUpdateType> {
+    return fetchAPI(`/progress-update-types/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: number): Promise<void> {
+    return fetchAPI(`/progress-update-types/${id}`, { method: 'DELETE' });
   },
 };
 

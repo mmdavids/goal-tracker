@@ -1,14 +1,17 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goalTypesAPI, configAPI, type GoalType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText, Sparkles } from 'lucide-svelte';
+  import { goalTypesAPI, progressUpdateTypesAPI, configAPI, type GoalType, type ProgressUpdateType } from '$lib/api/client';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText, Sparkles, Type, ChevronDown } from 'lucide-svelte';
   import PathBrowser from '$lib/components/PathBrowser.svelte';
   import { animationPreferences } from '$lib/stores/animations';
+  import { terminology } from '$lib/stores/terminology';
 
   let goalTypes: GoalType[] = [];
+  let progressUpdateTypes: ProgressUpdateType[] = [];
   let loading = true;
   let error = '';
   let showForm = false;
+  let showProgressUpdateTypeForm = false;
 
   // Fiscal year settings - store the start month of the fiscal year (Q1)
   let fiscalYearStartMonth = 9;  // September by default
@@ -36,22 +39,77 @@
     { value: 12, label: 'December' },
   ];
 
-  // Form fields
+  // Form fields for goal types
   let editingId: number | null = null;
   let formName = '';
   let formDescription = '';
   let formColor = '#3b82f6';
   let formIcon = '🎯';
 
-  const icons = ['🎯', '💼', '🌱', '❤️', '📚', '💰', '🚀', '🏆', '⚡', '🎨', '🔥', '💪'];
+  // Form fields for progress update types
+  let editingProgressUpdateTypeId: number | null = null;
+  let putFormName = '';
+  let putFormDescription = '';
+  let putFormEmoji = '📝';
+
+  const icons = [
+    '🎯', '💼', '🌱', '❤️', '📚', '💰', '🚀', '🏆', '⚡', '🎨', '🔥', '💪',
+    '🏃', '🧘', '🏋️', '🥗', '😴', '🧠', '👥', '💑', '👨‍👩‍👧‍👦', '🤝', '🌟',
+    '🏠', '🌿', '🧹', '🍳', '🛋️', '✈️', '🌍', '🗺️', '🏖️', '📖', '🎓',
+    '🧑‍💻', '🔬', '💻', '📈', '🎤', '📊', '🎵', '📷', '✍️', '🎬', '💳',
+    '📉', '🏦', '🎮', '🎸', '🎭', '🧩', '☕', '🌺', '🎪', '🛠️'
+  ];
   const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#f59e0b', '#ec4899', '#06b6d4'];
+  const progressEmojis = [
+    '📝', '✅', '🎉', '💡', '🚀', '⚠️', '📊', '💬', '🔧', '📸', '🎯', '⭐',
+    '✔️', '☑️', '💯', '🏁', '🎊', '🥳', '👏', '🙌', '🚫', '❌', '🛑',
+    '⛔', '🚧', '💭', '🤔', '🧠', '📢', '📣', '💌', '📧', '📋', '📄',
+    '🗂️', '🧪', '🔍', '📈', '📉', '➡️', '⬆️', '⏸️', '▶️', '⏹️', '🔄',
+    '🆕', '🔜', '🔔', '⏰', '💪', '🎁', '📦', '🏷️', '🔗', '🔑',
+    '🗓️', '📅', '📆', '🗒️', '🤝', '👥', '🧑‍💼', '💼', '🎤', '🎧', '📞',
+    '☎️', '📲', '💻', '🖥️', '⌚', '🕐', '🕑', '🕒', '🕓', '✏️', '📌',
+    '📍', '🔖', '🗳️', '🎲', '🔘', '⬜', '◻️', '◼️', '⚪', '⚫'
+  ];
 
   let deleteAnimationEnabled = $animationPreferences.deleteAnimation;
 
   $: animationPreferences.setDeleteAnimation(deleteAnimationEnabled);
 
+  // Section expansion state (all collapsed by default)
+  let expandedSections = {
+    goalTypes: false,
+    progressUpdateTypes: false,
+    fiscalYear: false,
+    animations: false,
+    terminology: false,
+    database: false
+  };
+
+  function toggleSection(section: keyof typeof expandedSections) {
+    expandedSections[section] = !expandedSections[section];
+  }
+
+  // Terminology settings
+  let appName = $terminology.appName;
+  let goalSingular = $terminology.goal.singular;
+  let goalPlural = $terminology.goal.plural;
+
+  function saveTerminology() {
+    terminology.setAppName(appName);
+    terminology.setGoalTerminology(goalSingular, goalPlural);
+    error = '';
+  }
+
+  function resetTerminology() {
+    terminology.reset();
+    appName = 'Goal Tracker';
+    goalSingular = 'Goal';
+    goalPlural = 'Goals';
+  }
+
   onMount(async () => {
     await loadGoalTypes();
+    await loadProgressUpdateTypes();
     loadQuarterSettings();
     await loadDatabasePath();
   });
@@ -124,6 +182,14 @@
     }
   }
 
+  async function loadProgressUpdateTypes() {
+    try {
+      progressUpdateTypes = await progressUpdateTypesAPI.getAll();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to load progress update types';
+    }
+  }
+
   function openForm(goalType?: GoalType) {
     if (goalType) {
       editingId = goalType.id;
@@ -184,10 +250,68 @@
       error = err instanceof Error ? err.message : 'Failed to delete goal type';
     }
   }
+
+  // Progress Update Type functions
+  function openProgressUpdateTypeForm(type?: ProgressUpdateType) {
+    if (type) {
+      editingProgressUpdateTypeId = type.id;
+      putFormName = type.name;
+      putFormDescription = type.description || '';
+      putFormEmoji = type.emoji;
+    } else {
+      editingProgressUpdateTypeId = null;
+      putFormName = '';
+      putFormDescription = '';
+      putFormEmoji = '📝';
+    }
+    showProgressUpdateTypeForm = true;
+  }
+
+  function closeProgressUpdateTypeForm() {
+    showProgressUpdateTypeForm = false;
+    editingProgressUpdateTypeId = null;
+  }
+
+  async function handleProgressUpdateTypeSubmit() {
+    try {
+      error = '';
+      if (editingProgressUpdateTypeId) {
+        await progressUpdateTypesAPI.update(editingProgressUpdateTypeId, {
+          name: putFormName,
+          description: putFormDescription || undefined,
+          emoji: putFormEmoji,
+        });
+      } else {
+        await progressUpdateTypesAPI.create({
+          name: putFormName,
+          description: putFormDescription || undefined,
+          emoji: putFormEmoji,
+        });
+      }
+      await loadProgressUpdateTypes();
+      closeProgressUpdateTypeForm();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to save progress update type';
+    }
+  }
+
+  async function handleProgressUpdateTypeDelete(id: number) {
+    if (!confirm('Are you sure you want to delete this progress update type?')) {
+      return;
+    }
+
+    try {
+      error = '';
+      await progressUpdateTypesAPI.delete(id);
+      await loadProgressUpdateTypes();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to delete progress update type';
+    }
+  }
 </script>
 
 <svelte:head>
-  <title>Settings - Goal Tracker</title>
+  <title>Settings - {$terminology.appName}</title>
 </svelte:head>
 
 <div class="settings-page">
@@ -196,173 +320,339 @@
     <a href="/" class="back-link">Back to Dashboard</a>
   </div>
 
-  <section class="settings-section">
-    <div class="section-header">
-      <h2>Goal Types</h2>
-      <button class="btn-primary" on:click={() => openForm()}>
-        <Plus size={20} />
-        New Type
-      </button>
-    </div>
-
-    {#if error}
-      <div class="error-banner">{error}</div>
-    {/if}
-
-    {#if loading}
-      <div class="loading">Loading...</div>
-    {:else if goalTypes.length === 0}
-      <div class="empty-state">
-        <p>No custom goal types yet. Create one to get started!</p>
+  <section class="settings-section" class:collapsed={!expandedSections.goalTypes}>
+    <div class="section-header" on:click={() => toggleSection('goalTypes')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.goalTypes}>
+          <ChevronDown size={20} />
+        </span>
+        <h2>{$terminology.goal.singular} Types</h2>
       </div>
-    {:else}
-      <div class="types-list">
-        {#each goalTypes as type}
-          <div class="type-card">
-            <div class="type-info">
-              <div class="type-icon-display" style="background-color: {type.color}20">
-                <span class="icon">{type.icon}</span>
-              </div>
-              <div class="type-details">
-                <h3>{type.name}</h3>
-                {#if type.description}
-                  <p>{type.description}</p>
-                {/if}
-                <span class="usage">{type.goal_count || 0} goals</span>
-              </div>
-            </div>
-            <div class="type-actions">
-              <button class="icon-btn" on:click={() => openForm(type)} title="Edit">
-                <Edit2 size={18} />
-              </button>
-              <button
-                class="icon-btn danger"
-                on:click={() => handleDelete(type.id)}
-                title="Delete"
-                disabled={type.goal_count && type.goal_count > 0}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </section>
-
-  <section class="settings-section">
-    <div class="section-header">
-      <div class="header-with-icon">
-        <Calendar size={24} />
-        <h2>Fiscal Year Configuration</h2>
-      </div>
-    </div>
-
-    <p class="section-description">
-      Configure when your fiscal year starts (Q1). All quarters will be calculated automatically (Q2 = Q1+3 months, Q3 = Q1+6 months, Q4 = Q1+9 months).
-    </p>
-
-    <div class="quarter-settings">
-      <div class="quarter-setting">
-        <label for="fiscal-start">Fiscal Year Starts:</label>
-        <select id="fiscal-start" bind:value={fiscalYearStartMonth}>
-          {#each months as month}
-            <option value={month.value}>{month.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
-
-    <div class="section-actions">
-      <button class="btn-primary" on:click={saveQuarterSettings}>
-        <Save size={18} />
-        Save Fiscal Year Settings
-      </button>
-    </div>
-  </section>
-
-  <section class="settings-section">
-    <div class="section-header">
-      <div class="header-with-icon">
-        <Sparkles size={24} />
-        <h2>Animation Preferences</h2>
-      </div>
-    </div>
-
-    <p class="section-description">
-      Configure visual effects and animations throughout the application.
-    </p>
-
-    <div class="animation-settings">
-      <label class="toggle-setting">
-        <div class="toggle-info">
-          <span class="toggle-label">Delete Animation</span>
-          <span class="toggle-description">Show ninja slice animation when deleting items</span>
-        </div>
-        <input
-          type="checkbox"
-          class="toggle-checkbox"
-          bind:checked={deleteAnimationEnabled}
-        />
-      </label>
-    </div>
-  </section>
-
-  <section class="settings-section">
-    <div class="section-header">
-      <div class="header-with-icon">
-        <Database size={24} />
-        <h2>Database Configuration</h2>
-      </div>
-    </div>
-
-    <p class="section-description">
-      Configure where your goal tracker database is stored. Leave empty to use the default location in your home directory.
-    </p>
-
-    <div class="database-info">
-      <div class="info-item">
-        <strong>Currently Using:</strong>
-        <code>{currentDatabasePath || 'Loading...'}</code>
-      </div>
-      <div class="info-item">
-        <strong>Default Location:</strong>
-        <code>{defaultDatabasePath || 'Loading...'}</code>
-      </div>
-    </div>
-
-    <div class="database-path-input">
-      <label for="database-path">Custom Database Path (optional):</label>
-      <div class="path-input-row">
-        <input
-          type="text"
-          id="database-path"
-          bind:value={databasePathInput}
-          placeholder="Leave empty for default location"
-        />
-        <button class="btn-browse" on:click={openPathBrowser}>
-          <FolderOpen size={18} />
-          Browse
+      {#if expandedSections.goalTypes}
+        <button class="btn-primary" on:click|stopPropagation={() => openForm()}>
+          <Plus size={20} />
+          New Type
         </button>
-      </div>
-      <button class="btn-default-path" on:click={useDefaultPath}>
-        <Wrench size={16} />
-        Use Default Location
-      </button>
+      {/if}
     </div>
 
-    {#if databaseMessage}
-      <div class="info-banner">
-        {databaseMessage}
+    {#if expandedSections.goalTypes}
+      <div class="section-content">
+        {#if error}
+          <div class="error-banner">{error}</div>
+        {/if}
+
+        {#if loading}
+          <div class="loading">Loading...</div>
+        {:else if goalTypes.length === 0}
+          <div class="empty-state">
+            <p>No custom {$terminology.goal.singular.toLowerCase()} types yet. Create one to get started!</p>
+          </div>
+        {:else}
+          <div class="types-list">
+            {#each goalTypes as type}
+              <div class="type-card">
+                <div class="type-info">
+                  <div class="type-icon-display" style="background-color: {type.color}20">
+                    <span class="icon">{type.icon}</span>
+                  </div>
+                  <div class="type-details">
+                    <h3>{type.name}</h3>
+                    {#if type.description}
+                      <p>{type.description}</p>
+                    {/if}
+                    <span class="usage">{type.goal_count || 0} {$terminology.goal.plural.toLowerCase()}</span>
+                  </div>
+                </div>
+                <div class="type-actions">
+                  <button class="icon-btn" on:click={() => openForm(type)} title="Edit">
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    class="icon-btn danger"
+                    on:click={() => handleDelete(type.id)}
+                    title="Delete"
+                    disabled={type.goal_count && type.goal_count > 0}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
+  </section>
 
-    <div class="section-actions">
-      <button class="btn-primary" on:click={saveDatabasePath}>
-        <Save size={18} />
-        Save Database Path
-      </button>
+  <section class="settings-section" class:collapsed={!expandedSections.progressUpdateTypes}>
+    <div class="section-header" on:click={() => toggleSection('progressUpdateTypes')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.progressUpdateTypes}>
+          <ChevronDown size={20} />
+        </span>
+        <h2>Progress Update Types</h2>
+      </div>
+      {#if expandedSections.progressUpdateTypes}
+        <button class="btn-primary" on:click|stopPropagation={() => openProgressUpdateTypeForm()}>
+          <Plus size={20} />
+          New Type
+        </button>
+      {/if}
     </div>
+
+    {#if expandedSections.progressUpdateTypes}
+      <div class="section-content">
+        {#if loading}
+          <div class="loading">Loading...</div>
+        {:else if progressUpdateTypes.length === 0}
+          <div class="empty-state">
+            <p>No custom progress update types yet. Create one to get started!</p>
+          </div>
+        {:else}
+          <div class="types-list">
+            {#each progressUpdateTypes as type}
+              <div class="type-card">
+                <div class="type-info">
+                  <div class="type-icon-display" style="background-color: rgba(59, 130, 246, 0.1)">
+                    <span class="icon">{type.emoji}</span>
+                  </div>
+                  <div class="type-details">
+                    <h3>{type.name}</h3>
+                    {#if type.description}
+                      <p>{type.description}</p>
+                    {/if}
+                    <span class="usage">{type.update_count || 0} updates</span>
+                  </div>
+                </div>
+                <div class="type-actions">
+                  <button class="icon-btn" on:click={() => openProgressUpdateTypeForm(type)} title="Edit">
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    class="icon-btn danger"
+                    on:click={() => handleProgressUpdateTypeDelete(type.id)}
+                    title="Delete"
+                    disabled={type.update_count && type.update_count > 0}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
+  </section>
+
+  <section class="settings-section" class:collapsed={!expandedSections.fiscalYear}>
+    <div class="section-header" on:click={() => toggleSection('fiscalYear')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.fiscalYear}>
+          <ChevronDown size={20} />
+        </span>
+        <div class="header-with-icon">
+          <Calendar size={24} />
+          <h2>Fiscal Year Configuration</h2>
+        </div>
+      </div>
+    </div>
+
+    {#if expandedSections.fiscalYear}
+      <div class="section-content">
+        <p class="section-description">
+          Configure when your fiscal year starts (Q1). All quarters will be calculated automatically (Q2 = Q1+3 months, Q3 = Q1+6 months, Q4 = Q1+9 months).
+        </p>
+
+        <div class="quarter-settings">
+          <div class="quarter-setting">
+            <label for="fiscal-start">Fiscal Year Starts:</label>
+            <select id="fiscal-start" bind:value={fiscalYearStartMonth}>
+              {#each months as month}
+                <option value={month.value}>{month.label}</option>
+              {/each}
+            </select>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button class="btn-primary" on:click={saveQuarterSettings}>
+            <Save size={18} />
+            Save Fiscal Year Settings
+          </button>
+        </div>
+      </div>
+    {/if}
+  </section>
+
+  <section class="settings-section" class:collapsed={!expandedSections.animations}>
+    <div class="section-header" on:click={() => toggleSection('animations')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.animations}>
+          <ChevronDown size={20} />
+        </span>
+        <div class="header-with-icon">
+          <Sparkles size={24} />
+          <h2>Animation Preferences</h2>
+        </div>
+      </div>
+    </div>
+
+    {#if expandedSections.animations}
+      <div class="section-content">
+        <p class="section-description">
+          Configure visual effects and animations throughout the application.
+        </p>
+
+        <div class="animation-settings">
+          <label class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Delete Animation</span>
+              <span class="toggle-description">Show ninja slice animation when deleting items</span>
+            </div>
+            <input
+              type="checkbox"
+              class="toggle-checkbox"
+              bind:checked={deleteAnimationEnabled}
+            />
+          </label>
+        </div>
+      </div>
+    {/if}
+  </section>
+
+  <section class="settings-section" class:collapsed={!expandedSections.terminology}>
+    <div class="section-header" on:click={() => toggleSection('terminology')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.terminology}>
+          <ChevronDown size={20} />
+        </span>
+        <div class="header-with-icon">
+          <Type size={24} />
+          <h2>Terminology</h2>
+        </div>
+      </div>
+    </div>
+
+    {#if expandedSections.terminology}
+      <div class="section-content">
+        <p class="section-description">
+          Customize the application name and how goals are named throughout the application. Change "Goal" to "Project", "Category", "Event", or anything else that fits your workflow.
+        </p>
+
+        <div class="terminology-settings">
+          <div class="form-group">
+            <label for="app-name">Application Name</label>
+            <input
+              type="text"
+              id="app-name"
+              bind:value={appName}
+              placeholder="Goal Tracker"
+            />
+            <span class="hint">Example: "My {appName}"</span>
+          </div>
+
+          <div class="form-group">
+            <label for="goal-singular">Singular Form</label>
+            <input
+              type="text"
+              id="goal-singular"
+              bind:value={goalSingular}
+              placeholder="Goal"
+            />
+            <span class="hint">Example: "Create a new {goalSingular}"</span>
+          </div>
+
+          <div class="form-group">
+            <label for="goal-plural">Plural Form</label>
+            <input
+              type="text"
+              id="goal-plural"
+              bind:value={goalPlural}
+              placeholder="Goals"
+            />
+            <span class="hint">Example: "All {goalPlural}"</span>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button class="btn-secondary" on:click={resetTerminology}>
+            Reset to Default
+          </button>
+          <button class="btn-primary" on:click={saveTerminology}>
+            <Save size={18} />
+            Save Terminology
+          </button>
+        </div>
+      </div>
+    {/if}
+  </section>
+
+  <section class="settings-section" class:collapsed={!expandedSections.database}>
+    <div class="section-header" on:click={() => toggleSection('database')}>
+      <div class="header-left">
+        <span class="chevron" class:expanded={expandedSections.database}>
+          <ChevronDown size={20} />
+        </span>
+        <div class="header-with-icon">
+          <Database size={24} />
+          <h2>Database Configuration</h2>
+        </div>
+      </div>
+    </div>
+
+    {#if expandedSections.database}
+      <div class="section-content">
+        <p class="section-description">
+          Configure where your goal tracker database is stored. Leave empty to use the default location in your home directory.
+        </p>
+
+        <div class="database-info">
+          <div class="info-item">
+            <strong>Currently Using:</strong>
+            <code>{currentDatabasePath || 'Loading...'}</code>
+          </div>
+          <div class="info-item">
+            <strong>Default Location:</strong>
+            <code>{defaultDatabasePath || 'Loading...'}</code>
+          </div>
+        </div>
+
+        <div class="database-path-input">
+          <label for="database-path">Custom Database Path (optional):</label>
+          <div class="path-input-row">
+            <input
+              type="text"
+              id="database-path"
+              bind:value={databasePathInput}
+              placeholder="Leave empty for default location"
+            />
+            <button class="btn-browse" on:click={openPathBrowser}>
+              <FolderOpen size={18} />
+              Browse
+            </button>
+          </div>
+          <button class="btn-default-path" on:click={useDefaultPath}>
+            <Wrench size={16} />
+            Use Default Location
+          </button>
+        </div>
+
+        {#if databaseMessage}
+          <div class="info-banner">
+            {databaseMessage}
+          </div>
+        {/if}
+
+        <div class="section-actions">
+          <button class="btn-primary" on:click={saveDatabasePath}>
+            <Save size={18} />
+            Save Database Path
+          </button>
+        </div>
+      </div>
+    {/if}
   </section>
 
   <section class="changelog-link-section">
@@ -389,7 +679,7 @@
   <div class="modal-overlay" on:click={closeForm}>
     <div class="modal" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>{editingId ? 'Edit' : 'New'} Goal Type</h2>
+        <h2>{editingId ? 'Edit' : 'New'} {$terminology.goal.singular} Type</h2>
         <button class="close-btn" on:click={closeForm}>
           <X size={24} />
         </button>
@@ -454,6 +744,60 @@
   </div>
 {/if}
 
+{#if showProgressUpdateTypeForm}
+  <div class="modal-overlay" on:click={closeProgressUpdateTypeForm}>
+    <div class="modal" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>{editingProgressUpdateTypeId ? 'Edit' : 'New'} Progress Update Type</h2>
+        <button class="close-btn" on:click={closeProgressUpdateTypeForm}>
+          <X size={24} />
+        </button>
+      </div>
+
+      <form on:submit|preventDefault={handleProgressUpdateTypeSubmit} class="modal-form">
+        <div class="form-group">
+          <label for="emoji">Emoji</label>
+          <div class="icon-picker">
+            {#each progressEmojis as emoji}
+              <button
+                type="button"
+                class="icon-option"
+                class:selected={putFormEmoji === emoji}
+                on:click={() => (putFormEmoji = emoji)}
+              >
+                {emoji}
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="put-name">Name *</label>
+          <input type="text" id="put-name" bind:value={putFormName} placeholder="e.g., Completed Task" required />
+        </div>
+
+        <div class="form-group">
+          <label for="put-description">Description (optional)</label>
+          <textarea
+            id="put-description"
+            bind:value={putFormDescription}
+            placeholder="Brief description of this update type..."
+            rows="2"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" on:click={closeProgressUpdateTypeForm}>Cancel</button>
+          <button type="submit" class="btn-primary" disabled={!putFormName.trim()}>
+            <Save size={18} />
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
+
 <style>
   .settings-page {
     max-width: 800px;
@@ -492,11 +836,58 @@
     margin-bottom: 1.5rem;
   }
 
+  .settings-section.collapsed {
+    padding: 1rem 1.5rem;
+  }
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 0;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+  }
+
+  .section-header:hover {
+    opacity: 0.8;
+  }
+
+  .settings-section:not(.collapsed) .section-header {
     margin-bottom: 1.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    color: var(--text-tertiary);
+  }
+
+  .chevron.expanded {
+    transform: rotate(180deg);
+  }
+
+  .section-content {
+    animation: slideDown 0.2s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .section-header h2 {
@@ -1010,6 +1401,46 @@
   .changelog-description {
     font-size: 0.875rem;
     color: var(--text-secondary);
+  }
+
+  .terminology-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .terminology-settings .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .terminology-settings .form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .terminology-settings .form-group input {
+    padding: 0.75rem;
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .terminology-settings .form-group input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .terminology-settings .hint {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-style: italic;
   }
 
   .animation-settings {

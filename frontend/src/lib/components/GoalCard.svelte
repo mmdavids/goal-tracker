@@ -1,9 +1,19 @@
 <script lang="ts">
   import type { Goal } from '$lib/api/client';
   import ProgressBar from './ProgressBar.svelte';
-  import { timeAgo } from '$lib/utils/date';
+  import { calculateTimeProgress } from '$lib/utils/date';
 
   export let goal: Goal;
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  $: timeProgress = goal.target_date ? calculateTimeProgress(goal.created_at, goal.target_date) : null;
 </script>
 
 <a href="/goal/{goal.id}" class="goal-card">
@@ -42,23 +52,42 @@
 
   <ProgressBar progress={goal.progress} size="md" />
 
+  {#if timeProgress !== null}
+    <div class="time-progress">
+      <div class="time-progress-label">
+        <span class="label-text">Time elapsed</span>
+        <span class="progress-percent">{timeProgress}%</span>
+      </div>
+      <div class="time-progress-bar">
+        <div class="time-progress-fill" style="width: {timeProgress}%"></div>
+        <div class="time-marker time-marker-start" title="Created: {formatDate(goal.created_at)}"></div>
+        <div class="time-marker time-marker-end" title="Target: {formatDate(goal.target_date)}"></div>
+      </div>
+    </div>
+  {/if}
+
   <div class="goal-footer">
     <div class="meta">
       <span>📝 {goal.update_count} {goal.update_count === 1 ? 'update' : 'updates'}</span>
       <span>🖼️ {goal.image_count} {goal.image_count === 1 ? 'image' : 'images'}</span>
-      {#if goal.quarter || goal.year}
+      {#if goal.quarter}
         <span class="quarter-year">
-          {#if goal.quarter && goal.year}
+          {#if goal.year}
             📅 {goal.quarter} {goal.year}
-          {:else if goal.quarter}
+          {:else}
             📅 {goal.quarter}
-          {:else if goal.year}
-            📅 {goal.year}
           {/if}
+        </span>
+      {:else if goal.target_date}
+        <span class="quarter-year">
+          📅 {formatDate(goal.target_date)}
+        </span>
+      {:else if goal.year}
+        <span class="quarter-year">
+          📅 {goal.year}
         </span>
       {/if}
     </div>
-    <span class="time" title={new Date(goal.updated_at).toLocaleString()}>{timeAgo(goal.updated_at)}</span>
   </div>
 
   {#if goal.tags && goal.tags.length > 0}
@@ -252,6 +281,77 @@
     overflow: hidden;
   }
 
+  .time-progress {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .time-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem;
+  }
+
+  .label-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .progress-percent {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .time-progress-bar {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 999px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .time-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .time-marker {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 2px solid var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .time-marker:hover {
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .time-marker-start {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .time-marker-end {
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+
   .goal-footer {
     display: flex;
     justify-content: space-between;
@@ -265,10 +365,6 @@
   .meta {
     display: flex;
     gap: 1rem;
-  }
-
-  .time {
-    color: #9ca3af;
   }
 
   .tags {

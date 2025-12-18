@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ProgressUpdate, Goal } from '$lib/api/client';
-  import { imagesAPI, progressAPI, goalsAPI } from '$lib/api/client';
+  import type { ProgressUpdate, Goal, ProgressUpdateType } from '$lib/api/client';
+  import { imagesAPI, progressAPI, goalsAPI, progressUpdateTypesAPI } from '$lib/api/client';
   import { formatDateTime, toDateTimeLocalString } from '$lib/utils/date';
   import ImageModal from './ImageModal.svelte';
   import ImageUpload from './ImageUpload.svelte';
@@ -18,6 +18,7 @@
   let editTitle = update.title;
   let editNotes = update.notes || '';
   let editProgressDelta = update.progress_delta;
+  let editProgressUpdateTypeId = update.progress_update_type_id || null;
   // Use date_achieved if available, otherwise fall back to created_at
   // Convert UTC to local time for datetime-local input
   let editDateAchieved = toDateTimeLocalString(update.date_achieved || update.created_at);
@@ -33,6 +34,7 @@
   let imageToDelete: number | null = null;
   let fileInput: HTMLInputElement;
   let availableGoals: Goal[] = [];
+  let progressUpdateTypes: ProgressUpdateType[] = [];
   let selectedGoalId = update.goal_id;
 
   function openImage(filename: string, caption: string | null) {
@@ -51,17 +53,22 @@
     editTitle = update.title;
     editNotes = update.notes || '';
     editProgressDelta = update.progress_delta;
+    editProgressUpdateTypeId = update.progress_update_type_id || null;
     editDateAchieved = toDateTimeLocalString(update.date_achieved || update.created_at);
     selectedGoalId = update.goal_id;
     newImages = [];
     isReflection = update.progress_delta === 0;
 
-    // Load available goals
+    // Load available goals and progress update types
     try {
-      availableGoals = await goalsAPI.getAll('active');
+      [availableGoals, progressUpdateTypes] = await Promise.all([
+        goalsAPI.getAll('active'),
+        progressUpdateTypesAPI.getAll()
+      ]);
     } catch (error) {
-      console.error('Failed to load goals:', error);
+      console.error('Failed to load data:', error);
       availableGoals = [];
+      progressUpdateTypes = [];
     }
   }
 
@@ -83,7 +90,8 @@
         title: editTitle,
         notes: editNotes || undefined,
         progress_delta: editProgressDelta,
-        date_achieved: isoDateTime
+        date_achieved: isoDateTime,
+        progress_update_type_id: editProgressUpdateTypeId || undefined
       });
 
       // Upload new images if any
@@ -216,6 +224,22 @@
           placeholder="Add notes..."
           rows="7"
         />
+      </div>
+
+      <div class="form-group">
+        <label for="typeSelect">Type (optional)</label>
+        <select
+          id="typeSelect"
+          bind:value={editProgressUpdateTypeId}
+          class="type-select"
+        >
+          <option value={null}>No type</option>
+          {#each progressUpdateTypes as type}
+            <option value={type.id}>
+              {type.emoji} {type.name}
+            </option>
+          {/each}
+        </select>
       </div>
 
       <div class="form-group">
@@ -375,6 +399,9 @@
 
     <div class="update-footer">
       <span class="time" title={new Date(update.date_achieved || update.created_at).toLocaleString()}>{formatDateTime(update.date_achieved || update.created_at)}</span>
+      {#if update.progress_update_type_name}
+        <span class="type-name">{update.progress_update_type_name}</span>
+      {/if}
     </div>
   {/if}
 </div>
@@ -540,6 +567,9 @@
   }
 
   .update-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--bg-tertiary);
@@ -548,6 +578,14 @@
   .time {
     font-size: 0.875rem;
     color: var(--text-tertiary);
+  }
+
+  .type-name {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
   /* Edit Mode Styles */

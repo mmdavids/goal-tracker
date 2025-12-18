@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import GoalTypeSelector from './GoalTypeSelector.svelte';
   import { Calendar, Save, Plus } from 'lucide-svelte';
+  import { terminology } from '$lib/stores/terminology';
 
   export let title = '';
   export let description = '';
@@ -10,7 +11,7 @@
   export let year: number | undefined = undefined;
   export let goalTypeId: number | undefined = undefined;
   export let isEditing = false;
-  export let submitText = 'Create Goal';
+  export let submitText = '';
 
   const dispatch = createEventDispatcher();
 
@@ -135,12 +136,12 @@
 
 <form on:submit|preventDefault={handleSubmit} class="goal-form">
   <div class="form-group">
-    <label>Goal Type (optional)</label>
+    <label>{$terminology.goal.singular} Type (optional)</label>
     <GoalTypeSelector bind:selected={goalTypeId} />
   </div>
 
   <div class="form-group">
-    <label for="title">Goal Title *</label>
+    <label for="title">{$terminology.goal.singular} Title *</label>
     <input
       type="text"
       id="title"
@@ -207,7 +208,7 @@
     {:else}
       <Plus size={20} />
     {/if}
-    {submitText}
+    {submitText || (isEditing ? 'Save Changes' : `Create ${$terminology.goal.singular}`)}
   </button>
 </form>
 

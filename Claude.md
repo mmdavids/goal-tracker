@@ -32,7 +32,7 @@ This is a personal goal tracking application that allows users to:
 
 ### Database
 - **SQLite**: Embedded relational database
-- Tables: users, goals, progress_updates, images, goal_types, config
+- Tables: users, goals, progress_updates, images, goal_types, progress_update_types, config
 
 ## Project Structure
 
@@ -83,6 +83,22 @@ goals/
 - Assign types to goals for better organization
 - View goal count per type
 - Prevent deletion of types with active goals
+
+### Progress Update Types
+- Create custom progress update types with configurable emojis
+- Optional field - existing updates continue to work without a type
+- Type emoji replaces numbered marker in timeline for visual categorization
+- Type name displays next to the date in update footer
+- Manage types in Settings page
+- Cannot delete types that are in use by existing updates
+
+### Customizable Terminology
+- Personalize application name throughout the interface
+- Customize what "Goals" are called (e.g., "Projects", "Categories", "Events")
+- Configure singular and plural forms in Settings
+- All user-facing text updates automatically including page titles, buttons, forms, and labels
+- Settings persist in browser localStorage
+- Backend implementation remains unchanged for data compatibility
 
 ### Fiscal Year Configuration
 - Configure fiscal year start month (default: September)
@@ -249,6 +265,7 @@ goals/
 
 ### progress_updates
 - id, goal_id, title, notes, progress_delta, date_achieved
+- progress_update_type_id (FK to progress_update_types, nullable)
 - created_at, updated_at
 
 ### images
@@ -257,6 +274,10 @@ goals/
 
 ### goal_types
 - id, user_id, name, description, icon, color
+- created_at, updated_at
+
+### progress_update_types
+- id, name, description, emoji
 - created_at, updated_at
 
 ### config
@@ -281,6 +302,18 @@ goals/
 - Tracks celebration display state
 - Ensures milestones show only once per session
 - Controls confetti animation
+
+**terminology.ts**
+- Manages custom application name and goal terminology
+- Stores user preferences for app name, singular and plural goal terms
+- Syncs with localStorage
+- Provides setAppName(), setGoalTerminology(), and reset() methods
+- Ensures backward compatibility by merging stored data with defaults
+
+**animations.ts**
+- Manages animation preferences
+- Controls delete animation (ninja slice) on/off
+- Syncs with localStorage
 
 ## Common Patterns
 
@@ -361,7 +394,34 @@ When committing changes to this project, follow these guidelines:
 
 ## Recent Changes
 
-### Dark Mode Improvements (Latest)
+### Customizable Application Name & Collapsible Settings (Latest - 2025-12-18)
+- Added customizable application name in Settings → Terminology
+  - Replaces "Goal Tracker" in navigation bar, page titles, and browser tabs
+  - Works seamlessly with custom goal terminology
+  - Settings persist in browser localStorage
+- Made all settings sections collapsible for better organization
+  - All sections start collapsed by default for cleaner UI
+  - Click section headers to expand/collapse
+  - Rotating chevron icon indicates expansion state
+  - Smooth slide-down animation when expanding
+  - Action buttons hidden in collapsed state
+
+### Customizable Terminology & Progress Update Types (2025-12-17)
+- Added customizable terminology system
+  - Configure custom singular and plural terms for "Goals" (e.g., "Projects", "Categories")
+  - All user-facing text updates automatically throughout the application
+  - Settings stored in browser localStorage
+  - Backend unchanged for data compatibility
+- Implemented progress update types
+  - User-definable types with configurable emojis (85 emojis available)
+  - Optional field - no breaking changes for existing updates
+  - Type emoji replaces numbered marker in timeline
+  - Type name displays in update footer
+  - Manage types in Settings page
+  - Cannot delete types in use
+- Expanded emoji selection to 56 goal type icons and 85 progress update emojis
+
+### Dark Mode Improvements
 - Fixed form inputs to properly display text in dark mode
 - Updated all modals to use theme variables
 - Added proper background and text colors to all form elements
@@ -476,5 +536,5 @@ Personal project - use and modify as needed.
 
 ---
 
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-18
 **Version**: 1.0.0

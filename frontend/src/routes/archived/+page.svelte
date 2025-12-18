@@ -3,6 +3,7 @@
   import { goalsAPI, type Goal } from '$lib/api/client';
   import GoalCard from '$lib/components/GoalCard.svelte';
   import { Archive } from 'lucide-svelte';
+  import { terminology } from '$lib/stores/terminology';
 
   let archivedGoals: Goal[] = [];
   let loading = true;
@@ -18,7 +19,7 @@
       error = '';
       archivedGoals = await goalsAPI.getAll('completed');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load archived goals';
+      error = err instanceof Error ? err.message : `Failed to load archived ${$terminology.goal.plural.toLowerCase()}`;
     } finally {
       loading = false;
     }
@@ -30,16 +31,16 @@
 </script>
 
 <svelte:head>
-  <title>Archived Goals - Goal Tracker</title>
+  <title>Archived {$terminology.goal.plural} - {$terminology.appName}</title>
 </svelte:head>
 
 <div class="archived-page">
   <div class="header">
     <div class="header-content">
       <Archive size={32} />
-      <h1>Archived Goals</h1>
+      <h1>Archived {$terminology.goal.plural}</h1>
     </div>
-    <p class="subtitle">View your completed goals</p>
+    <p class="subtitle">View your completed {$terminology.goal.plural.toLowerCase()}</p>
   </div>
 
   {#if error}
@@ -49,14 +50,14 @@
   {/if}
 
   {#if loading}
-    <div class="loading">Loading archived goals...</div>
+    <div class="loading">Loading archived {$terminology.goal.plural.toLowerCase()}...</div>
   {:else if archivedGoals.length === 0}
     <div class="empty-state">
       <div class="empty-icon">
         <Archive size={64} />
       </div>
-      <h2>No archived goals</h2>
-      <p>Goals you mark as completed will appear here.</p>
+      <h2>No archived {$terminology.goal.plural.toLowerCase()}</h2>
+      <p>{$terminology.goal.plural} you mark as completed will appear here.</p>
     </div>
   {:else}
     <div class="goals-grid">

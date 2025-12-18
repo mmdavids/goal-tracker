@@ -6,6 +6,7 @@
   import NinjaSliceAnimation from '$lib/components/NinjaSliceAnimation.svelte';
   import { formatDateTime } from '$lib/utils/date';
   import { animationPreferences } from '$lib/stores/animations';
+  import { terminology } from '$lib/stores/terminology';
 
   let deletedGoals: Goal[] = [];
   let loading = true;
@@ -24,7 +25,7 @@
       error = '';
       deletedGoals = await goalsAPI.getDeleted();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load deleted goals';
+      error = err instanceof Error ? err.message : `Failed to load deleted ${$terminology.goal.plural.toLowerCase()}`;
     } finally {
       loading = false;
     }
@@ -36,7 +37,7 @@
       await goalsAPI.restore(id);
       await loadDeletedGoals();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to restore goal';
+      error = err instanceof Error ? err.message : `Failed to restore ${$terminology.goal.singular.toLowerCase()}`;
     }
   }
 
@@ -57,7 +58,7 @@
         await onNinjaSliceComplete();
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete goal';
+      error = err instanceof Error ? err.message : `Failed to delete ${$terminology.goal.singular.toLowerCase()}`;
       showDeleteModal = false;
     }
   }
@@ -71,14 +72,14 @@
       showNinjaSlice = false;
       await loadDeletedGoals();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete goal';
+      error = err instanceof Error ? err.message : `Failed to delete ${$terminology.goal.singular.toLowerCase()}`;
       showNinjaSlice = false;
     }
   }
 </script>
 
 <svelte:head>
-  <title>Trash Bin - Goal Tracker</title>
+  <title>Trash Bin - {$terminology.appName}</title>
 </svelte:head>
 
 <div class="trash-page">
@@ -87,7 +88,7 @@
       <Trash2 size={32} />
       <h1>Trash Bin</h1>
     </div>
-    <p class="subtitle">Restore or permanently delete your goals</p>
+    <p class="subtitle">Restore or permanently delete your {$terminology.goal.plural.toLowerCase()}</p>
   </div>
 
   {#if error}
@@ -98,14 +99,14 @@
   {/if}
 
   {#if loading}
-    <div class="loading">Loading deleted goals...</div>
+    <div class="loading">Loading deleted {$terminology.goal.plural.toLowerCase()}...</div>
   {:else if deletedGoals.length === 0}
     <div class="empty-state">
       <div class="empty-icon">
         <Trash2 size={64} />
       </div>
       <h2>Trash bin is empty</h2>
-      <p>Deleted goals will appear here. You can restore or permanently delete them.</p>
+      <p>Deleted {$terminology.goal.plural.toLowerCase()} will appear here. You can restore or permanently delete them.</p>
     </div>
   {:else}
     <div class="goals-list">
@@ -136,7 +137,7 @@
             <button
               class="btn-restore"
               on:click={() => handleRestore(goal.id)}
-              aria-label="Restore goal"
+              aria-label={`Restore ${$terminology.goal.singular.toLowerCase()}`}
             >
               <RotateCcw size={18} />
               Restore
@@ -144,7 +145,7 @@
             <button
               class="btn-delete"
               on:click={() => confirmPermanentDelete(goal.id)}
-              aria-label="Permanently delete goal"
+              aria-label={`Permanently delete ${$terminology.goal.singular.toLowerCase()}`}
             >
               <Trash2 size={18} />
               Delete Forever
@@ -158,8 +159,8 @@
 
 {#if showDeleteModal}
   <ConfirmModal
-    title="Permanently Delete Goal"
-    message="This will permanently delete this goal and all its progress updates and images. This action cannot be undone."
+    title={`Permanently Delete ${$terminology.goal.singular}`}
+    message={`This will permanently delete this ${$terminology.goal.singular.toLowerCase()} and all its progress updates and images. This action cannot be undone.`}
     confirmText="Delete Forever"
     cancelText="Cancel"
     onConfirm={handlePermanentDelete}
