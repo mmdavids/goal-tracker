@@ -26,7 +26,7 @@
   <div
     class="h-full transition-all duration-500 ease-out {colorClass}"
     style="width: {barWidth}%"
-  />
+  ></div>
 </div>
 
 <style>

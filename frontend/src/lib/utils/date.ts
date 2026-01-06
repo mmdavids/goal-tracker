@@ -86,3 +86,24 @@ export function calculateTimeProgress(startDate: string | Date, targetDate: stri
 
   return Math.min(Math.max(Math.round(percentage), 0), 100);
 }
+
+// Format date with full weekday, month name, and day
+export function formatFullDate(date: string | Date): string {
+  const d = parseDate(date);
+  return d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+// Format just the time (HH:MM)
+export function formatTime(date: string | Date): string {
+  const d = parseDate(date);
+  return d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}

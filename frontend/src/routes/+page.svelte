@@ -678,7 +678,11 @@
   }
 
   .goal-wrapper :global(.goal-header) {
-    padding-left: 2.25rem;
+    padding-left: 2.5rem;
+  }
+
+  .goal-wrapper :global(.goal-type-wrapper) {
+    margin-left: 2.5rem;
   }
 
   .goal-checkbox {
@@ -750,5 +754,47 @@
       justify-content: center;
       min-width: 120px;
     }
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .btn-primary {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-secondary {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-export {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-view-toggle {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .form-container {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  :global([data-compact="true"]) .header {
+    margin-bottom: 1.5rem;
+  }
+
+  :global([data-compact="true"]) h1 {
+    font-size: 1.75rem;
+  }
+
+  :global([data-compact="true"]) .header-actions {
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .goals-grid {
+    gap: 1rem;
   }
 </style>

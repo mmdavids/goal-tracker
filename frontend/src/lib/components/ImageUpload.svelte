@@ -38,6 +38,10 @@
     on:drop={handleDrop}
     on:dragover={handleDragOver}
     on:click={() => fileInput.click()}
+    on:keydown={(e) => e.key === 'Enter' && fileInput.click()}
+    role="button"
+    tabindex="0"
+    aria-label="Upload images by dragging and dropping or clicking to browse"
   >
     <svg
       width="48"
@@ -46,6 +50,7 @@
       fill="none"
       stroke="currentColor"
       stroke-width="2"
+      aria-hidden="true"
     >
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
@@ -67,8 +72,8 @@
       {#each files as file, i}
         <div class="preview-item">
           <img src={URL.createObjectURL(file)} alt={file.name} />
-          <button type="button" class="remove-btn" on:click={() => removeFile(i)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <button type="button" class="remove-btn" on:click={() => removeFile(i)} aria-label="Remove {file.name}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -148,5 +153,23 @@
 
   .remove-btn:hover {
     background: rgba(0, 0, 0, 0.9);
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .image-upload {
+    gap: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .drop-zone {
+    padding: 2rem 1.5rem;
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .drop-zone p {
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .preview-grid {
+    gap: 0.5rem;
   }
 </style>

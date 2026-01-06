@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goalTypesAPI, progressUpdateTypesAPI, configAPI, type GoalType, type ProgressUpdateType } from '$lib/api/client';
-  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText, Sparkles, Type, ChevronDown } from 'lucide-svelte';
+  import { Plus, Trash2, Edit2, X, Calendar, Database, FolderOpen, Wrench, Save, FileText, Sparkles, Type, ChevronDown, Minimize2, Moon, Sun } from 'lucide-svelte';
   import PathBrowser from '$lib/components/PathBrowser.svelte';
   import { animationPreferences } from '$lib/stores/animations';
+  import { compactMode } from '$lib/stores/compactMode';
+  import { theme } from '$lib/stores/theme';
   import { terminology } from '$lib/stores/terminology';
 
   let goalTypes: GoalType[] = [];
@@ -72,15 +74,17 @@
   ];
 
   let deleteAnimationEnabled = $animationPreferences.deleteAnimation;
+  let compactModeEnabled = $compactMode;
 
   $: animationPreferences.setDeleteAnimation(deleteAnimationEnabled);
+  $: compactMode.set(compactModeEnabled);
 
   // Section expansion state (all collapsed by default)
   let expandedSections = {
     goalTypes: false,
     progressUpdateTypes: false,
     fiscalYear: false,
-    animations: false,
+    compactMode: false,
     terminology: false,
     database: false
   };
@@ -326,7 +330,7 @@
         <span class="chevron" class:expanded={expandedSections.goalTypes}>
           <ChevronDown size={20} />
         </span>
-        <h2>{$terminology.goal.singular} Types</h2>
+        <h2>'{$terminology.goal.singular}' Types</h2>
       </div>
       {#if expandedSections.goalTypes}
         <button class="btn-primary" on:click|stopPropagation={() => openForm()}>
@@ -346,7 +350,7 @@
           <div class="loading">Loading...</div>
         {:else if goalTypes.length === 0}
           <div class="empty-state">
-            <p>No custom {$terminology.goal.singular.toLowerCase()} types yet. Create one to get started!</p>
+            <p>No custom '{$terminology.goal.singular.toLowerCase()}' types yet. Create one to get started!</p>
           </div>
         {:else}
           <div class="types-list">
@@ -486,26 +490,51 @@
     {/if}
   </section>
 
-  <section class="settings-section" class:collapsed={!expandedSections.animations}>
-    <div class="section-header" on:click={() => toggleSection('animations')}>
+  <section class="settings-section" class:collapsed={!expandedSections.compactMode}>
+    <div class="section-header" on:click={() => toggleSection('compactMode')}>
       <div class="header-left">
-        <span class="chevron" class:expanded={expandedSections.animations}>
+        <span class="chevron" class:expanded={expandedSections.compactMode}>
           <ChevronDown size={20} />
         </span>
         <div class="header-with-icon">
-          <Sparkles size={24} />
-          <h2>Animation Preferences</h2>
+          <Minimize2 size={24} />
+          <h2>Display Preferences</h2>
         </div>
       </div>
     </div>
 
-    {#if expandedSections.animations}
+    {#if expandedSections.compactMode}
       <div class="section-content">
         <p class="section-description">
-          Configure visual effects and animations throughout the application.
+          Adjust appearance, spacing, sizing, and visual effects throughout the application.
         </p>
 
         <div class="animation-settings">
+          <label class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Dark Mode</span>
+              <span class="toggle-description">Use dark colors for reduced eye strain in low light</span>
+            </div>
+            <input
+              type="checkbox"
+              class="toggle-checkbox"
+              checked={$theme === 'dark'}
+              on:change={() => theme.toggle()}
+            />
+          </label>
+
+          <label class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Compact Mode</span>
+              <span class="toggle-description">Reduce padding, margins, and font sizes for a denser layout</span>
+            </div>
+            <input
+              type="checkbox"
+              class="toggle-checkbox"
+              bind:checked={compactModeEnabled}
+            />
+          </label>
+
           <label class="toggle-setting">
             <div class="toggle-info">
               <span class="toggle-label">Delete Animation</span>
@@ -561,7 +590,7 @@
               bind:value={goalSingular}
               placeholder="Goal"
             />
-            <span class="hint">Example: "Create a new {goalSingular}"</span>
+            <span class="hint">Example: "Create a new '{goalSingular}'"</span>
           </div>
 
           <div class="form-group">
@@ -605,7 +634,7 @@
     {#if expandedSections.database}
       <div class="section-content">
         <p class="section-description">
-          Configure where your goal tracker database is stored. Leave empty to use the default location in your home directory.
+          Configure where your database is stored. Leave empty to use the default location in your home directory.
         </p>
 
         <div class="database-info">
@@ -679,7 +708,7 @@
   <div class="modal-overlay" on:click={closeForm}>
     <div class="modal" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>{editingId ? 'Edit' : 'New'} {$terminology.goal.singular} Type</h2>
+        <h2>{editingId ? 'Edit' : 'New'} '{$terminology.goal.singular}' Type</h2>
         <button class="close-btn" on:click={closeForm}>
           <X size={24} />
         </button>
@@ -727,7 +756,7 @@
           <textarea
             id="description"
             bind:value={formDescription}
-            placeholder="Brief description of this goal type..."
+            placeholder="Brief description of this {$terminology.goal.singular} type..."
             rows="2"
           />
         </div>
@@ -1513,5 +1542,39 @@
 
   .toggle-checkbox:checked::before {
     transform: translateX(20px);
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .btn-primary,
+  :global([data-compact="true"]) .btn-secondary,
+  :global([data-compact="true"]) .btn-danger {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-default {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .settings-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  :global([data-compact="true"]) .settings-section.collapsed {
+    padding: 0.75rem 1rem;
+  }
+
+  :global([data-compact="true"]) h1 {
+    font-size: 1.75rem;
+  }
+
+  :global([data-compact="true"]) .section-header h2 {
+    font-size: 1.125rem;
+  }
+
+  :global([data-compact="true"]) .settings-section:not(.collapsed) .section-header {
+    margin-bottom: 1rem;
   }
 </style>

@@ -12,6 +12,22 @@ export class GoalsService {
 
   constructor(private readonly databaseService: DatabaseService) {}
 
+  private formatDateForExport(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private formatDateTimeForExport(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
   create(createGoalDto: CreateGoalDto) {
     try {
       this.logger.log(`Creating goal with data: ${JSON.stringify(createGoalDto)}`);
@@ -314,7 +330,7 @@ export class GoalsService {
   async exportToMarkdown(goalIds: number[]): Promise<string> {
     const db = this.databaseService.getDb();
     let markdown = `# Goals Export\n\n`;
-    markdown += `Generated on ${new Date().toLocaleString()}\n\n`;
+    markdown += `Generated on ${this.formatDateTimeForExport(new Date())}\n\n`;
     markdown += `---\n\n`;
 
     // Get all goals with details and sort them
@@ -348,7 +364,7 @@ export class GoalsService {
       markdown += `**Progress:** ${goal.progress}%\n`;
 
       if (goal.target_date) {
-        markdown += `**Target Date:** ${new Date(goal.target_date).toLocaleDateString()}\n`;
+        markdown += `**Target Date:** ${this.formatDateForExport(new Date(goal.target_date))}\n`;
       }
 
       if (goal.quarter || goal.year) {
@@ -360,8 +376,11 @@ export class GoalsService {
       // Get progress updates
       const updatesStmt = db.prepare(`
         SELECT pu.*,
+          put.name as progress_update_type_name,
+          put.emoji as progress_update_type_emoji,
           COUNT(DISTINCT i.id) as image_count
         FROM progress_updates pu
+        LEFT JOIN progress_update_types put ON pu.progress_update_type_id = put.id
         LEFT JOIN images i ON pu.id = i.progress_update_id
         WHERE pu.goal_id = ?
         GROUP BY pu.id
@@ -371,18 +390,21 @@ export class GoalsService {
 
       if (updates.length > 0) {
         markdown += `### Progress Updates\n\n`;
-        markdown += `| # | Date | Update | Progress | Images | Notes |\n`;
-        markdown += `|---|------|--------|----------|--------|-------|\n`;
+        markdown += `| # | Date | Type | Update | Progress | Images | Notes |\n`;
+        markdown += `|---|------|------|--------|----------|--------|-------|\n`;
 
         updates.forEach((update, index) => {
-          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          const date = this.formatDateForExport(new Date(update.date_achieved || update.created_at));
           const number = updates.length - index; // Reverse numbering (oldest = 1, newest = highest)
           const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
           const imageCount = update.image_count > 0 ? `📷 ${update.image_count}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
-          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
+          const updateType = update.progress_update_type_emoji
+            ? `${update.progress_update_type_emoji} ${update.progress_update_type_name}`
+            : (update.progress_delta === 0 ? '💬' : '-');
+          const title = update.progress_delta === 0 && !update.progress_update_type_emoji ? `💬 ${update.title}` : update.title;
 
-          markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+          markdown += `| ${number} | ${date} | ${updateType} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
         });
 
         markdown += `\n`;
@@ -412,8 +434,11 @@ export class GoalsService {
       markdown += `${goal.title}\n\n`;
 
       const updatesStmt = db.prepare(`
-        SELECT pu.*
+        SELECT pu.*,
+          put.name as progress_update_type_name,
+          put.emoji as progress_update_type_emoji
         FROM progress_updates pu
+        LEFT JOIN progress_update_types put ON pu.progress_update_type_id = put.id
         WHERE pu.goal_id = ?
         ORDER BY COALESCE(pu.date_achieved, pu.created_at) ASC
       `);
@@ -421,10 +446,13 @@ export class GoalsService {
 
       if (updates.length > 0) {
         updates.forEach((update, index) => {
-          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          const date = this.formatDateForExport(new Date(update.date_achieved || update.created_at));
           const number = index + 1;
           const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '0%';
-          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
+          const typePrefix = update.progress_update_type_emoji
+            ? `${update.progress_update_type_emoji} `
+            : (update.progress_delta === 0 ? '💬 ' : '');
+          const title = `${typePrefix}${update.title}`;
 
           markdown += `${number}: (${date}) ${title} - ${progressDelta}\n`;
           if (update.notes) {
@@ -448,7 +476,7 @@ export class GoalsService {
 
     // Generate markdown content
     let markdown = `# Goals Export\n\n`;
-    markdown += `Generated on ${new Date().toLocaleString()}\n\n`;
+    markdown += `Generated on ${this.formatDateTimeForExport(new Date())}\n\n`;
     markdown += `---\n\n`;
 
     // Get all goals with details and sort them
@@ -482,7 +510,7 @@ export class GoalsService {
       markdown += `**Progress:** ${goal.progress}%\n`;
 
       if (goal.target_date) {
-        markdown += `**Target Date:** ${new Date(goal.target_date).toLocaleDateString()}\n`;
+        markdown += `**Target Date:** ${this.formatDateForExport(new Date(goal.target_date))}\n`;
       }
 
       if (goal.quarter || goal.year) {
@@ -494,8 +522,11 @@ export class GoalsService {
       // Get progress updates with images
       const updatesStmt = db.prepare(`
         SELECT pu.*,
+          put.name as progress_update_type_name,
+          put.emoji as progress_update_type_emoji,
           COUNT(DISTINCT i.id) as image_count
         FROM progress_updates pu
+        LEFT JOIN progress_update_types put ON pu.progress_update_type_id = put.id
         LEFT JOIN images i ON pu.id = i.progress_update_id
         WHERE pu.goal_id = ?
         GROUP BY pu.id
@@ -505,11 +536,11 @@ export class GoalsService {
 
       if (updates.length > 0) {
         markdown += `### Progress Updates\n\n`;
-        markdown += `| # | Date | Update | Progress | Images | Notes |\n`;
-        markdown += `|---|------|--------|----------|--------|-------|\n`;
+        markdown += `| # | Date | Type | Update | Progress | Images | Notes |\n`;
+        markdown += `|---|------|------|--------|----------|--------|-------|\n`;
 
         updates.forEach((update, index) => {
-          const date = new Date(update.date_achieved || update.created_at).toLocaleDateString();
+          const date = this.formatDateForExport(new Date(update.date_achieved || update.created_at));
           const number = updates.length - index; // Reverse numbering (oldest = 1, newest = highest)
           const progressDelta = update.progress_delta > 0 ? `+${update.progress_delta}%` : '-';
 
@@ -523,9 +554,12 @@ export class GoalsService {
 
           const imageCount = images.length > 0 ? `📷 ${images.length}` : '-';
           const notes = update.notes ? update.notes.replace(/\n/g, '<br>') : '-';
-          const title = update.progress_delta === 0 ? `💬 ${update.title}` : update.title;
+          const updateType = update.progress_update_type_emoji
+            ? `${update.progress_update_type_emoji} ${update.progress_update_type_name}`
+            : (update.progress_delta === 0 ? '💬' : '-');
+          const title = update.progress_delta === 0 && !update.progress_update_type_emoji ? `💬 ${update.title}` : update.title;
 
-          markdown += `| ${number} | ${date} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
+          markdown += `| ${number} | ${date} | ${updateType} | ${title} | ${progressDelta} | ${imageCount} | ${notes} |\n`;
 
           // Add images to zip
           for (const image of images) {

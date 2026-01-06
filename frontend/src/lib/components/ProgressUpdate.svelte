@@ -9,6 +9,7 @@
   import { Pencil, Check, X, Trash2, ImagePlus, Save } from 'lucide-svelte';
   import { createEventDispatcher } from 'svelte';
   import { animationPreferences } from '$lib/stores/animations';
+  import { terminology } from '$lib/stores/terminology';
 
   export let update: ProgressUpdate;
 
@@ -223,7 +224,7 @@
           bind:value={editNotes}
           placeholder="Add notes..."
           rows="7"
-        />
+        ></textarea>
       </div>
 
       <div class="form-group">
@@ -287,7 +288,7 @@
       </div>
 
       <div class="form-group">
-        <label for="goalSelect">Move to Goal</label>
+        <label for="goalSelect">Move to {$terminology.goal.singular}</label>
         <select
           id="goalSelect"
           bind:value={selectedGoalId}
@@ -301,7 +302,7 @@
           {/each}
         </select>
         {#if selectedGoalId !== update.goal_id}
-          <p class="move-warning">This progress update will be moved to the selected goal when you save.</p>
+          <p class="move-warning">This progress update will be moved to the selected {$terminology.goal.singular.toLowerCase()} when you save.</p>
         {/if}
       </div>
 
@@ -327,7 +328,7 @@
       {/if}
 
       <div class="form-group">
-        <label>Add More Images</label>
+        <label for="addMoreImages">Add More Images</label>
         <ImageUpload bind:files={newImages} />
       </div>
 
@@ -444,8 +445,8 @@
   .progress-update {
     background: var(--bg-primary);
     border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 8px;
+    padding: 0.875rem;
   }
 
   .progress-update.status-update {
@@ -458,7 +459,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   .title-container {
@@ -480,7 +481,7 @@
 
   h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--text-primary);
   }
@@ -493,25 +494,25 @@
   .delta {
     background: #10b981;
     color: white;
-    padding: 0.25rem 0.625rem;
+    padding: 0.1875rem 0.5rem;
     border-radius: 9999px;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
   }
 
   .notes {
     color: var(--text-secondary);
-    font-size: 0.875rem;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.6;
+    font-size: 0.8125rem;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
     white-space: pre-line;
   }
 
   .images {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.75rem;
-    margin: 0.75rem 0;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin: 0.5rem 0;
   }
 
   .image-container {
@@ -548,9 +549,9 @@
 
   .image-container img {
     width: 100%;
-    height: 150px;
+    height: 120px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid var(--border-primary);
     display: block;
     transition: transform 0.2s;
@@ -570,18 +571,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--bg-tertiary);
   }
 
   .time {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--text-tertiary);
   }
 
   .type-name {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     color: var(--text-tertiary);
     font-weight: 600;
     text-transform: uppercase;
@@ -779,5 +780,92 @@
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .progress-update {
+    padding: 0.625rem;
+    border-radius: 6px;
+  }
+
+  :global([data-compact="true"]) .update-header {
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .title-container,
+  :global([data-compact="true"]) .header-actions {
+    gap: 0.375rem;
+  }
+
+  :global([data-compact="true"]) h4 {
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .delta {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .notes {
+    font-size: 0.75rem;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.4;
+  }
+
+  :global([data-compact="true"]) .images {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.375rem;
+    margin: 0.25rem 0;
+  }
+
+  :global([data-compact="true"]) .image-container img {
+    height: 100px;
+  }
+
+  :global([data-compact="true"]) .update-footer {
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .time {
+    font-size: 0.6875rem;
+  }
+
+  :global([data-compact="true"]) .type-name {
+    font-size: 0.625rem;
+  }
+
+  :global([data-compact="true"]) .edit-form {
+    gap: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .form-group {
+    gap: 0.375rem;
+  }
+
+  :global([data-compact="true"]) .form-group input,
+  :global([data-compact="true"]) .form-group textarea,
+  :global([data-compact="true"]) .form-group select {
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .form-group label {
+    font-size: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .edit-actions {
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .icon-btn {
+    padding: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .btn-primary,
+  :global([data-compact="true"]) .btn-secondary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
   }
 </style>

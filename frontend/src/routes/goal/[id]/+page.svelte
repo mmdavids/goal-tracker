@@ -10,6 +10,7 @@
   import InputModal from '$lib/components/InputModal.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
   import PadlockAnimation from '$lib/components/PadlockAnimation.svelte';
+  import DatePopup from '$lib/components/DatePopup.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
   import { calculateTimeProgress, formatDate } from '$lib/utils/date';
   import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save, MessageSquare } from 'lucide-svelte';
@@ -27,6 +28,8 @@
   let showAddNoteModal = false;
   let isEditingGoal = false;
   let showPadlockAnimation = false;
+  let showDatePopup = false;
+  let popupType: 'start' | 'end' | null = null;
 
   // Form fields
   let updateTitle = '';
@@ -218,6 +221,13 @@
       showPadlockAnimation = false;
     }
   }
+
+  function handleMarkerClick(e: MouseEvent, type: 'start' | 'end') {
+    e.preventDefault();
+    e.stopPropagation();
+    popupType = type;
+    showDatePopup = true;
+  }
 </script>
 
 <svelte:head>
@@ -306,8 +316,16 @@
           </div>
           <div class="time-progress-bar">
             <div class="time-progress-fill" style="width: {timeProgress}%"></div>
-            <div class="time-marker time-marker-start" title="Created: {formatDate(goal.created_at)}"></div>
-            <div class="time-marker time-marker-end" title="Target: {formatDate(goal.target_date)}"></div>
+            <button
+              class="time-marker time-marker-start"
+              on:click={(e) => handleMarkerClick(e, 'start')}
+              aria-label="View start date"
+            ></button>
+            <button
+              class="time-marker time-marker-end"
+              on:click={(e) => handleMarkerClick(e, 'end')}
+              aria-label="View target date"
+            ></button>
           </div>
         </div>
       {/if}
@@ -355,7 +373,7 @@
             bind:value={updateNotes}
             placeholder="Add details about your progress..."
             rows="3"
-          />
+          ></textarea>
         </div>
 
         <div class="form-group">
@@ -411,7 +429,7 @@
         </div>
 
         <div class="form-group">
-          <label>Images (optional)</label>
+          <label for="imageUploadNew">Images (optional)</label>
           <ImageUpload bind:files={uploadFiles} />
         </div>
 
@@ -519,6 +537,15 @@
     cancelText="Cancel"
     onConfirm={confirmAddNote}
     onCancel={() => showAddNoteModal = false}
+  />
+{/if}
+
+{#if goal}
+  <DatePopup
+    bind:show={showDatePopup}
+    bind:type={popupType}
+    startDate={goal.created_at}
+    endDate={goal.target_date}
   />
 {/if}
 
@@ -994,5 +1021,55 @@
     height: 1px;
     background: var(--border-primary);
     opacity: 0.5;
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .btn-primary,
+  :global([data-compact="true"]) .btn-secondary {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .actions {
+    gap: 0.5rem;
+    margin: 1.25rem 0;
+  }
+
+  :global([data-compact="true"]) .update-form {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  :global([data-compact="true"]) .update-form h3 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+
+  :global([data-compact="true"]) .delete-goal-btn,
+  :global([data-compact="true"]) .btn-edit,
+  :global([data-compact="true"]) .btn-archive {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .header {
+    margin-bottom: 1.25rem;
+  }
+
+  :global([data-compact="true"]) .header-actions {
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .time-progress {
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .time-progress-label {
+    margin-bottom: 0.375rem;
+  }
+
+  :global([data-compact="true"]) .time-progress-bar {
+    height: 8px;
   }
 </style>

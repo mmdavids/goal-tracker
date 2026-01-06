@@ -233,4 +233,41 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .modal-content {
+    padding: 1.5rem;
+  }
+
+  :global([data-compact="true"]) .modal-icon {
+    margin: 0 auto 1rem;
+  }
+
+  :global([data-compact="true"]) h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+  }
+
+  :global([data-compact="true"]) p {
+    margin: 0 0 1rem 0;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .input-group {
+    margin-bottom: 1rem;
+  }
+
+  :global([data-compact="true"]) .modal-input {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .modal-actions {
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .modal-actions button {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
 </style>

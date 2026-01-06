@@ -104,4 +104,22 @@
     color: var(--text-primary);
     text-align: center;
   }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .loading {
+    padding: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .type-grid {
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .type-option {
+    padding: 0.75rem 0.625rem;
+    gap: 0.375rem;
+  }
+
+  :global([data-compact="true"]) .name {
+    font-size: 0.8125rem;
+  }
 </style>

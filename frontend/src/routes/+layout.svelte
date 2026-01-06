@@ -2,6 +2,7 @@
   import CelebrationAnimation from '$lib/components/CelebrationAnimation.svelte';
   import { Archive, Trash2, Moon, Sun, Settings, Home } from 'lucide-svelte';
   import { theme } from '$lib/stores/theme';
+  import { compactMode } from '$lib/stores/compactMode';
   import { terminology } from '$lib/stores/terminology';
   import '../app.css';
 </script>
@@ -134,5 +135,35 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .nav-content {
+    padding: 0.75rem 1.25rem;
+  }
+
+  :global([data-compact="true"]) .logo {
+    font-size: 1.125rem;
+  }
+
+  :global([data-compact="true"]) .logo-emoji {
+    font-size: 1.5rem;
+  }
+
+  :global([data-compact="true"]) .nav-links {
+    gap: 1rem;
+  }
+
+  :global([data-compact="true"]) .nav-link {
+    gap: 0.25rem;
+    font-size: 0.9375rem;
+  }
+
+  :global([data-compact="true"]) .theme-toggle {
+    padding: 0.375rem;
+  }
+
+  :global([data-compact="true"]) .main-content {
+    padding: 1.5rem 1.25rem;
   }
 </style>

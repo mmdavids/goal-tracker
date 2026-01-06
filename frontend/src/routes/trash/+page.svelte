@@ -343,4 +343,43 @@
       flex: 1;
     }
   }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .header {
+    margin-bottom: 1.5rem;
+  }
+
+  :global([data-compact="true"]) h1 {
+    font-size: 1.75rem;
+  }
+
+  :global([data-compact="true"]) .subtitle {
+    font-size: 0.9375rem;
+  }
+
+  :global([data-compact="true"]) .goal-item {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  :global([data-compact="true"]) .goal-item h3 {
+    font-size: 1rem;
+  }
+
+  :global([data-compact="true"]) .goal-actions {
+    gap: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .goal-actions button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .empty-state {
+    padding: 3rem 1.5rem;
+  }
+
+  :global([data-compact="true"]) .empty-state h2 {
+    font-size: 1.25rem;
+  }
 </style>

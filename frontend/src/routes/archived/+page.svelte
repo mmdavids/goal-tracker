@@ -147,4 +147,29 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .header {
+    margin-bottom: 1.5rem;
+  }
+
+  :global([data-compact="true"]) h1 {
+    font-size: 1.75rem;
+  }
+
+  :global([data-compact="true"]) .subtitle {
+    font-size: 0.9375rem;
+  }
+
+  :global([data-compact="true"]) .goals-grid {
+    gap: 1rem;
+  }
+
+  :global([data-compact="true"]) .empty-state {
+    padding: 3rem 1.5rem;
+  }
+
+  :global([data-compact="true"]) .empty-state h2 {
+    font-size: 1.25rem;
+  }
 </style>

@@ -18,6 +18,62 @@
 
   <div class="changelog-content">
     <section class="changelog-section">
+      <h2>2026-01-06</h2>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Compact Mode</strong>: Added new compact mode toggle for denser UI layout
+            <ul>
+              <li>New Svelte store for managing compact mode state with localStorage persistence</li>
+              <li>Applies <code>data-compact="true"</code> attribute to document for CSS targeting</li>
+              <li>Reduced padding, margins, and font sizes throughout the application</li>
+              <li>Affects navigation bar, buttons, forms, goal cards, modals, and all pages</li>
+              <li>Preference persists across sessions</li>
+            </ul>
+          </li>
+          <li><strong>Date Information Popups</strong>: Enhanced date display with interactive popups on goal cards
+            <ul>
+              <li>New DatePopup component for showing detailed date information</li>
+              <li>Click on start/end date markers to view full date and time details</li>
+              <li>Beautiful modal overlay with formatted dates and emojis</li>
+              <li>Supports both compact and normal mode styling</li>
+              <li>Close with X button, clicking overlay, or pressing Escape</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>UI Improvements</h3>
+        <ul>
+          <li><strong>Goal Card Redesign</strong>: Restructured goal cards with improved visual hierarchy
+            <ul>
+              <li>Moved progress badge from header to dedicated progress section</li>
+              <li>Cleaner layout with better spacing and organization</li>
+              <li>Enhanced timeline progress visualization</li>
+              <li>Clickable date markers for detailed information</li>
+            </ul>
+          </li>
+          <li><strong>Date Utilities</strong>: Added new date formatting functions
+            <ul>
+              <li><code>formatTime()</code> for short time display (e.g., "2:30 PM")</li>
+              <li><code>formatFullDate()</code> for complete date and time (e.g., "Monday, January 6, 2026 at 2:30 PM")</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>Technical Improvements</h3>
+        <ul>
+          <li><strong>Backend Service Updates</strong>: Enhanced goal service with better query organization and formatting</li>
+          <li><strong>Component Updates</strong>: Applied compact mode styling to all major components and modals</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
       <h2>2025-12-18</h2>
 
       <div class="change-group">

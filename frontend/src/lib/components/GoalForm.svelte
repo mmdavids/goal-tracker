@@ -136,7 +136,7 @@
 
 <form on:submit|preventDefault={handleSubmit} class="goal-form">
   <div class="form-group">
-    <label>{$terminology.goal.singular} Type (optional)</label>
+    <label for="goalTypeSelect">{$terminology.goal.singular} Type (optional)</label>
     <GoalTypeSelector bind:selected={goalTypeId} />
   </div>
 
@@ -156,9 +156,9 @@
     <textarea
       id="description"
       bind:value={description}
-      placeholder="Add more details about your goal..."
+      placeholder="Add more details about your {$terminology.goal.singular}..."
       rows="15"
-    />
+    ></textarea>
   </div>
 
   <div class="form-row">
@@ -308,5 +308,44 @@
 
   .quarter-btn:active {
     transform: scale(0.98);
+  }
+
+  /* Compact Mode */
+  :global([data-compact="true"]) .goal-form {
+    gap: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .form-group {
+    gap: 0.375rem;
+  }
+
+  :global([data-compact="true"]) .form-row {
+    gap: 0.75rem;
+  }
+
+  :global([data-compact="true"]) label {
+    font-size: 0.75rem;
+  }
+
+  :global([data-compact="true"]) input,
+  :global([data-compact="true"]) textarea,
+  :global([data-compact="true"]) select {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-primary {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .quarter-buttons {
+    gap: 0.375rem;
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .quarter-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
   }
 </style>

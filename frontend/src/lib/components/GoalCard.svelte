@@ -1,9 +1,13 @@
 <script lang="ts">
   import type { Goal } from '$lib/api/client';
   import ProgressBar from './ProgressBar.svelte';
+  import DatePopup from './DatePopup.svelte';
   import { calculateTimeProgress } from '$lib/utils/date';
 
   export let goal: Goal;
+
+  let showDatePopup = false;
+  let popupType: 'start' | 'end' | null = null;
 
   function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -13,36 +17,27 @@
     return `${day}-${month}-${year}`;
   }
 
+  function handleMarkerClick(e: MouseEvent, type: 'start' | 'end') {
+    e.preventDefault();
+    e.stopPropagation();
+    popupType = type;
+    showDatePopup = true;
+  }
+
   $: timeProgress = goal.target_date ? calculateTimeProgress(goal.created_at, goal.target_date) : null;
 </script>
 
 <a href="/goal/{goal.id}" class="goal-card">
   <div class="goal-header">
-    <div class="goal-title">
-      <h3>{goal.title}</h3>
-    </div>
-    <span
-      class="progress-badge"
-      class:completed={goal.progress >= 100}
-      class:over-completed={goal.progress > 100}
-      style="--progress: {Math.min(goal.progress, 100)}"
-    >
-      <span class="progress-text">
-        {#if goal.progress > 100}
-          🔥 {goal.progress}%
-        {:else if goal.progress === 100}
-          ✨ {goal.progress}%
-        {:else}
-          {goal.progress}%
-        {/if}
-      </span>
-    </span>
+    <h3>{goal.title}</h3>
   </div>
 
   {#if goal.goal_type_name}
-    <div class="goal-type-badge" style="background-color: {goal.goal_type_color}20; color: {goal.goal_type_color}">
-      <span class="type-icon">{goal.goal_type_icon}</span>
-      <span>{goal.goal_type_name}</span>
+    <div class="goal-type-wrapper">
+      <span class="goal-type-badge" style="background-color: {goal.goal_type_color}20; color: {goal.goal_type_color}">
+        <span class="type-icon">{goal.goal_type_icon}</span>
+        <span>{goal.goal_type_name}</span>
+      </span>
     </div>
   {/if}
 
@@ -50,43 +45,61 @@
     <p class="description">{goal.description}</p>
   {/if}
 
-  <ProgressBar progress={goal.progress} size="md" />
-
-  {#if timeProgress !== null}
-    <div class="time-progress">
-      <div class="time-progress-label">
-        <span class="label-text">Time elapsed</span>
-        <span class="progress-percent">{timeProgress}%</span>
+  <div class="card-bottom">
+    <div class="progress-section">
+      <div class="progress-label">
+        <span class="label-text">Progress achieved</span>
+        <span class="progress-percent">{goal.progress}%</span>
       </div>
-      <div class="time-progress-bar">
-        <div class="time-progress-fill" style="width: {timeProgress}%"></div>
-        <div class="time-marker time-marker-start" title="Created: {formatDate(goal.created_at)}"></div>
-        <div class="time-marker time-marker-end" title="Target: {formatDate(goal.target_date)}"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: {Math.min(goal.progress, 100)}%"></div>
       </div>
     </div>
-  {/if}
 
-  <div class="goal-footer">
-    <div class="meta">
-      <span>📝 {goal.update_count} {goal.update_count === 1 ? 'update' : 'updates'}</span>
-      <span>🖼️ {goal.image_count} {goal.image_count === 1 ? 'image' : 'images'}</span>
-      {#if goal.quarter}
-        <span class="quarter-year">
-          {#if goal.year}
-            📅 {goal.quarter} {goal.year}
-          {:else}
-            📅 {goal.quarter}
-          {/if}
-        </span>
-      {:else if goal.target_date}
-        <span class="quarter-year">
-          📅 {formatDate(goal.target_date)}
-        </span>
-      {:else if goal.year}
-        <span class="quarter-year">
-          📅 {goal.year}
-        </span>
-      {/if}
+    {#if timeProgress !== null}
+      <div class="time-progress">
+        <div class="time-progress-label">
+          <span class="label-text">Time elapsed</span>
+          <span class="progress-percent">{timeProgress}%</span>
+        </div>
+        <div class="time-progress-bar">
+          <div class="time-progress-fill" style="width: {timeProgress}%"></div>
+          <button
+            class="time-marker time-marker-start"
+            on:click={(e) => handleMarkerClick(e, 'start')}
+            aria-label="View start date"
+          ></button>
+          <button
+            class="time-marker time-marker-end"
+            on:click={(e) => handleMarkerClick(e, 'end')}
+            aria-label="View target date"
+          ></button>
+        </div>
+      </div>
+    {/if}
+
+    <div class="goal-footer">
+      <div class="meta">
+        <span>📝 {goal.update_count} {goal.update_count === 1 ? 'update' : 'updates'}</span>
+        <span>🖼️ {goal.image_count} {goal.image_count === 1 ? 'image' : 'images'}</span>
+        {#if goal.quarter}
+          <span class="quarter-year">
+            {#if goal.year}
+              📅 {goal.quarter} {goal.year}
+            {:else}
+              📅 {goal.quarter}
+            {/if}
+          </span>
+        {:else if goal.target_date}
+          <span class="quarter-year">
+            📅 {formatDate(goal.target_date)}
+          </span>
+        {:else if goal.year}
+          <span class="quarter-year">
+            📅 {goal.year}
+          </span>
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -100,6 +113,13 @@
     </div>
   {/if}
 </a>
+
+<DatePopup
+  bind:show={showDatePopup}
+  bind:type={popupType}
+  startDate={goal.created_at}
+  endDate={goal.target_date}
+/>
 
 <style>
   .goal-card {
@@ -122,14 +142,7 @@
   }
 
   .goal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     margin-bottom: 0.75rem;
-  }
-
-  .goal-title {
-    flex: 1;
   }
 
   h3 {
@@ -254,6 +267,10 @@
     animation: pulse-fire 1s ease-in-out infinite;
   }
 
+  .goal-type-wrapper {
+    margin-bottom: 0.75rem;
+  }
+
   .goal-type-badge {
     display: inline-flex;
     align-items: center;
@@ -262,7 +279,6 @@
     border-radius: 9999px;
     font-size: 0.8125rem;
     font-weight: 600;
-    margin-bottom: 0.75rem;
   }
 
   .type-icon {
@@ -281,8 +297,38 @@
     overflow: hidden;
   }
 
+  .card-bottom {
+    margin-top: auto;
+    padding-top: 0.75rem;
+  }
+
+  .progress-section {
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
   .time-progress {
-    margin-top: 1rem;
     margin-bottom: 0.5rem;
   }
 
@@ -356,8 +402,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: auto;
-    padding-top: 0.75rem;
     font-size: 0.875rem;
     color: var(--text-secondary);
   }
@@ -381,4 +425,68 @@
     font-weight: 500;
   }
 
+  /* Compact Mode */
+  :global([data-compact="true"]) .goal-card {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  :global([data-compact="true"]) .goal-header {
+    margin-bottom: 0.5rem;
+  }
+
+  :global([data-compact="true"]) h3 {
+    font-size: 1rem;
+  }
+
+  :global([data-compact="true"]) .goal-type-wrapper {
+    margin-bottom: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .goal-type-badge {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  :global([data-compact="true"]) .description {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .card-bottom {
+    padding-top: 0.5rem;
+  }
+
+  :global([data-compact="true"]) .progress-section {
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .progress-label {
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .time-progress {
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .time-progress-label {
+    margin-bottom: 0.25rem;
+  }
+
+  :global([data-compact="true"]) .time-progress-bar {
+    height: 6px;
+  }
+
+  :global([data-compact="true"]) .goal-footer {
+    font-size: 0.8125rem;
+  }
+
+  :global([data-compact="true"]) .meta {
+    gap: 0.625rem;
+  }
+
+  :global([data-compact="true"]) .tags {
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
 </style>
