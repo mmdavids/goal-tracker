@@ -90,3 +90,19 @@ export interface DbTableInfo {
   dflt_value: string | null;
   pk: number;
 }
+
+export interface DbTodo {
+  id: number;
+  goal_id: number | null;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  goal_title?: string;
+  goal_icon?: string;
+  goal_color?: string;
+}

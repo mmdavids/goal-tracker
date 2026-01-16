@@ -83,6 +83,22 @@ export interface Milestone {
   achieved_at?: string;
 }
 
+export interface Todo {
+  id: number;
+  goal_id?: number;
+  title: string;
+  description?: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  due_date?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  goal_title?: string;
+  goal_icon?: string;
+  goal_color?: string;
+}
+
 async function fetchAPI(endpoint: string, options?: RequestInit) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -391,5 +407,53 @@ export const configAPI = {
   }> {
     const params = path ? `?path=${encodeURIComponent(path)}` : '';
     return fetchAPI(`/config/browse-directory${params}`);
+  },
+};
+
+// Todos API
+export const todosAPI = {
+  async getAll(filters?: {
+    goalId?: number;
+    status?: string;
+    hasGoal?: boolean;
+    isCompleted?: boolean;
+  }): Promise<Todo[]> {
+    const params = new URLSearchParams();
+    if (filters?.goalId !== undefined) params.append('goal_id', filters.goalId.toString());
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.hasGoal !== undefined) params.append('has_goal', filters.hasGoal.toString());
+    if (filters?.isCompleted !== undefined) params.append('is_completed', filters.isCompleted.toString());
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return fetchAPI(`/todos${query}`);
+  },
+
+  async getOne(id: number): Promise<Todo> {
+    return fetchAPI(`/todos/${id}`);
+  },
+
+  async create(data: Partial<Todo>): Promise<Todo> {
+    return fetchAPI('/todos', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: number, data: Partial<Todo>): Promise<Todo> {
+    return fetchAPI(`/todos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: number): Promise<void> {
+    return fetchAPI(`/todos/${id}`, { method: 'DELETE' });
+  },
+
+  async toggleComplete(id: number): Promise<Todo> {
+    return fetchAPI(`/todos/${id}/toggle`, { method: 'PATCH' });
+  },
+
+  async deleteAll(): Promise<{ message: string; count: number }> {
+    return fetchAPI('/todos', { method: 'DELETE' });
   },
 };

@@ -150,6 +150,20 @@ export class DatabaseService implements OnModuleInit {
         FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        goal_id INTEGER,
+        title TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'pending',
+        priority TEXT DEFAULT 'medium',
+        due_date DATETIME,
+        completed_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE SET NULL
+      );
+
     `);
 
     console.log('✅ Database schema initialized');

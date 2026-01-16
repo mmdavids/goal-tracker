@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import type { Goal } from '$lib/api/client';
   import { FileText, Image } from 'lucide-svelte';
 
   export let goals: Goal[] = [];
   export let selectedGoalIds: Set<number> = new Set();
 
-  const dispatch = createEventDispatcher();
+  // Callback props
+  export let onToggleSelection: ((goalId: number) => void) | undefined = undefined;
 
   function toggleGoalSelection(goalId: number) {
-    dispatch('toggle-selection', goalId);
+    onToggleSelection?.(goalId);
   }
 
   function getProgressClass(progress: number): string {

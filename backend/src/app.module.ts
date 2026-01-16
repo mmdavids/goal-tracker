@@ -6,10 +6,11 @@ import { TagsModule } from './modules/tags/tags.module';
 import { GoalTypesModule } from './modules/goal-types/goal-types.module';
 import { ProgressUpdateTypesModule } from './modules/progress-update-types/progress-update-types.module';
 import { ConfigModule } from './modules/config/config.module';
+import { TodosModule } from './modules/todos/todos.module';
 import { DatabaseService } from './database/database.service';
 
 @Module({
-  imports: [GoalsModule, ProgressModule, ImagesModule, TagsModule, GoalTypesModule, ProgressUpdateTypesModule, ConfigModule],
+  imports: [GoalsModule, ProgressModule, ImagesModule, TagsModule, GoalTypesModule, ProgressUpdateTypesModule, ConfigModule, TodosModule],
   providers: [DatabaseService],
 })
 export class AppModule {}

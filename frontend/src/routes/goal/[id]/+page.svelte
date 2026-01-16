@@ -2,18 +2,20 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { goalsAPI, progressAPI, imagesAPI, progressUpdateTypesAPI, type Goal, type ProgressUpdate, type ProgressUpdateType } from '$lib/api/client';
+  import { goalsAPI, progressAPI, imagesAPI, progressUpdateTypesAPI, todosAPI, type Goal, type ProgressUpdate, type ProgressUpdateType, type Todo } from '$lib/api/client';
   import ProgressBar from '$lib/components/ProgressBar.svelte';
   import ProgressUpdateComponent from '$lib/components/ProgressUpdate.svelte';
   import ImageUpload from '$lib/components/ImageUpload.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import InputModal from '$lib/components/InputModal.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
+  import TodoForm from '$lib/components/TodoForm.svelte';
+  import TodoSidebar from '$lib/components/TodoSidebar.svelte';
   import PadlockAnimation from '$lib/components/PadlockAnimation.svelte';
   import DatePopup from '$lib/components/DatePopup.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
   import { calculateTimeProgress, formatDate } from '$lib/utils/date';
-  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save, MessageSquare } from 'lucide-svelte';
+  import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save, MessageSquare, ListTodo } from 'lucide-svelte';
   import { terminology } from '$lib/stores/terminology';
 
   let goal: Goal | null = null;
@@ -26,10 +28,14 @@
   let showArchiveModal = false;
   let showQuickWinModal = false;
   let showAddNoteModal = false;
-  let isEditingGoal = false;
+  let showEditGoalModal = false;
   let showPadlockAnimation = false;
   let showDatePopup = false;
   let popupType: 'start' | 'end' | null = null;
+  let showTodoForm = false;
+  let todos: Todo[] = [];
+  let completedTodos: Todo[] = [];
+  let loadingTodos = true;
 
   // Form fields
   let updateTitle = '';
@@ -46,9 +52,23 @@
   onMount(async () => {
     await Promise.all([
       loadGoalData(),
-      loadProgressUpdateTypes()
+      loadProgressUpdateTypes(),
+      loadTodos()
     ]);
   });
+
+  async function loadTodos() {
+    try {
+      loadingTodos = true;
+      const allTodos = await todosAPI.getAll({ goalId });
+      todos = allTodos.filter((todo: Todo) => todo.status !== 'completed');
+      completedTodos = allTodos.filter((todo: Todo) => todo.status === 'completed');
+    } catch (err) {
+      console.error('Failed to load todos:', err);
+    } finally {
+      loadingTodos = false;
+    }
+  }
 
   async function loadProgressUpdateTypes() {
     try {
@@ -179,7 +199,7 @@
       error = '';
       await goalsAPI.update(goal.id, event.detail);
       await loadGoalData();
-      isEditingGoal = false;
+      showEditGoalModal = false;
     } catch (err) {
       error = err instanceof Error ? err.message : `Failed to update ${$terminology.goal.singular.toLowerCase()}`;
     }
@@ -228,7 +248,83 @@
     popupType = type;
     showDatePopup = true;
   }
+
+  async function handleCreateTodo(detail: { title: string; description?: string; goal_id?: number; priority: 'low' | 'medium' | 'high'; due_date?: string }) {
+    try {
+      error = '';
+      await todosAPI.create(detail);
+      showTodoForm = false;
+      await loadTodos();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to create todo';
+    }
+  }
+
+  async function handleToggleTodo(detail: { id: number }) {
+    try {
+      await todosAPI.toggleComplete(detail.id);
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to toggle todo:', err);
+    }
+  }
+
+  async function handleEditTodo(detail: { id?: number; title: string; description?: string; goal_id?: number; priority: 'low' | 'medium' | 'high'; due_date?: string }) {
+    try {
+      if (!detail.id) return;
+      await todosAPI.update(detail.id, {
+        title: detail.title,
+        description: detail.description,
+        goal_id: detail.goal_id,
+        priority: detail.priority,
+        due_date: detail.due_date,
+      });
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to edit todo:', err);
+    }
+  }
+
+  async function handleDeleteTodo(detail: { id: number }) {
+    try {
+      await todosAPI.delete(detail.id);
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to delete todo:', err);
+    }
+  }
+
+  async function handleConvertTodo(detail: { todo: Todo }) {
+    const todo = detail.todo;
+    try {
+      // Create progress update from todo
+      await progressAPI.create(goalId, {
+        title: todo.title,
+        notes: todo.description,
+        progress_delta: 0, // Start with 0, user can adjust
+      });
+
+      // Delete the todo
+      await todosAPI.delete(todo.id);
+
+      // Reload both lists
+      await Promise.all([loadGoalData(), loadTodos()]);
+
+      error = 'Todo converted to progress update';
+      setTimeout(() => error = '', 3000);
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to convert todo';
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && showEditGoalModal) {
+      showEditGoalModal = false;
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <svelte:head>
   <title>{goal?.title || $terminology.goal.singular} - {$terminology.appName}</title>
@@ -243,52 +339,30 @@
     <a href="/" class="btn-primary">Back to Dashboard</a>
   </div>
 {:else if goal}
-  <div class="goal-detail">
+  <div class="page-wrapper">
+    <div class="goal-detail">
     <div class="header">
       <a href="/" class="back-link">
         <ArrowLeft size={20} />
         Back
       </a>
       <div class="header-actions">
-        {#if isEditingGoal}
-          <button class="btn-secondary" on:click={() => isEditingGoal = false}>
-            <X size={18} />
-            Cancel Edit
-          </button>
-        {:else}
-          <button class="btn-edit" on:click={() => isEditingGoal = true} disabled={goal.status === 'completed'}>
-            <Pencil size={18} />
-            Edit {$terminology.goal.singular}
-          </button>
-          <button class="btn-archive" on:click={confirmArchiveGoal}>
-            <Archive size={18} />
-            {goal.status === 'completed' ? 'Unarchive' : 'Archive'}
-          </button>
-          <button class="delete-goal-btn" on:click={confirmDeleteGoal}>
-            <Trash2 size={18} />
-            Delete {$terminology.goal.singular}
-          </button>
-        {/if}
+        <button class="btn-edit" on:click={() => showEditGoalModal = true} disabled={goal.status === 'completed'}>
+          <Pencil size={18} />
+          Edit {$terminology.goal.singular}
+        </button>
+        <button class="btn-archive" on:click={confirmArchiveGoal}>
+          <Archive size={18} />
+          {goal.status === 'completed' ? 'Unarchive' : 'Archive'}
+        </button>
+        <button class="delete-goal-btn" on:click={confirmDeleteGoal}>
+          <Trash2 size={18} />
+          Delete {$terminology.goal.singular}
+        </button>
       </div>
     </div>
 
-    {#if isEditingGoal}
-      <div class="edit-goal-form">
-        <h2>Edit {$terminology.goal.singular}</h2>
-        <GoalForm
-          title={goal.title}
-          description={goal.description || ''}
-          targetDate={goal.target_date ? goal.target_date.split('T')[0] : ''}
-          quarter={goal.quarter}
-          year={goal.year}
-          goalTypeId={goal.goal_type_id}
-          isEditing={true}
-          submitText="Save Changes"
-          on:submit={handleEditGoal}
-        />
-      </div>
-    {:else}
-      <div class="goal-header">
+    <div class="goal-header">
         <div class="goal-title">
           {#if goal.goal_type_icon}
             <span class="icon" style="color: {goal.goal_type_color}">{goal.goal_type_icon}</span>
@@ -329,7 +403,6 @@
           </div>
         </div>
       {/if}
-    {/if}
 
     {#if error}
       <div class="error-banner">{error}</div>
@@ -350,6 +423,10 @@
         Add Note
       </button>
       <button class="btn-secondary" on:click={handleQuickWin}>⚡ Quick Win (+10%)</button>
+      <button class="btn-secondary" on:click={() => showTodoForm = true}>
+        <ListTodo size={20} />
+        Add To-Do
+      </button>
     </div>
 
     {#if showUpdateForm}
@@ -372,7 +449,7 @@
             id="notes"
             bind:value={updateNotes}
             placeholder="Add details about your progress..."
-            rows="3"
+            rows="10"
           ></textarea>
         </div>
 
@@ -459,7 +536,7 @@
               {#if daysDiff >= 1}
                 <div class="timeline-interstitial">
                   <div class="interstitial-line"></div>
-                  <div class="interstitial-text">[{daysDiff} {daysDiff === 1 ? 'day' : 'days'} later]</div>
+                  <div class="interstitial-text">[{daysDiff} day gap]</div>
                   <div class="interstitial-line"></div>
                 </div>
               {/if}
@@ -476,13 +553,27 @@
                 {/if}
               </div>
               <div class="timeline-content">
-                <ProgressUpdateComponent {update} on:updated={loadGoalData} on:deleted={loadGoalData} on:moved={loadGoalData} />
+                <ProgressUpdateComponent {update} onUpdated={loadGoalData} onDeleted={loadGoalData} onMoved={loadGoalData} />
               </div>
             </div>
           {/each}
         </div>
       {/if}
     </div>
+    </div>
+
+    <!-- Collapsible Todo Sidebar -->
+    <TodoSidebar
+      {todos}
+      {completedTodos}
+      loading={loadingTodos}
+      showConvertButton={true}
+      onToggleComplete={handleToggleTodo}
+      onEdit={handleEditTodo}
+      onDelete={handleDeleteTodo}
+      onConvert={handleConvertTodo}
+      onCreateNew={() => showTodoForm = true}
+    />
   </div>
 {/if}
 
@@ -549,6 +640,36 @@
   />
 {/if}
 
+<TodoForm
+  bind:show={showTodoForm}
+  goalId={goalId}
+  goals={[]}
+  onSubmit={handleCreateTodo}
+  onCancel={() => showTodoForm = false}
+/>
+
+{#if showEditGoalModal && goal}
+  <div class="modal-backdrop" on:click={(e) => e.target === e.currentTarget && (showEditGoalModal = false)} role="presentation">
+    <div class="modal-content edit-goal-modal">
+      <button class="modal-close-button" on:click={() => showEditGoalModal = false} aria-label="Close">
+        <X size={24} />
+      </button>
+      <h2 class="modal-title">Edit {$terminology.goal.singular}</h2>
+      <GoalForm
+        title={goal.title}
+        description={goal.description || ''}
+        targetDate={goal.target_date ? goal.target_date.split('T')[0] : ''}
+        quarter={goal.quarter}
+        year={goal.year}
+        goalTypeId={goal.goal_type_id}
+        isEditing={true}
+        submitText="Save Changes"
+        onSubmit={handleEditGoal}
+      />
+    </div>
+  </div>
+{/if}
+
 <style>
   .loading,
   .error-page {
@@ -556,9 +677,17 @@
     padding: 3rem;
   }
 
+  .page-wrapper {
+    display: flex;
+    position: relative;
+    width: 100%;
+  }
+
   .goal-detail {
     max-width: 800px;
     margin: 0 auto;
+    flex: 1;
+    min-width: 0;
   }
 
   .header {
@@ -677,21 +806,6 @@
 
   .btn-secondary:hover {
     background: var(--bg-secondary);
-  }
-
-  .edit-goal-form {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .edit-goal-form h2 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
   }
 
   .goal-header {
@@ -1071,5 +1185,76 @@
 
   :global([data-compact="true"]) .time-progress-bar {
     height: 8px;
+  }
+
+  /* Edit Goal Modal */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .edit-goal-modal {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 8px 32px var(--shadow);
+  }
+
+  .modal-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+
+  .modal-close-button:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+  }
+
+  .modal-title {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-right: 3rem;
+  }
+
+  @media (max-width: 640px) {
+    .edit-goal-modal {
+      padding: 1.5rem;
+      max-height: 95vh;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+    }
   }
 </style>

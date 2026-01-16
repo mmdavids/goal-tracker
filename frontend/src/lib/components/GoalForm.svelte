@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import GoalTypeSelector from './GoalTypeSelector.svelte';
   import { Calendar, Save, Plus } from 'lucide-svelte';
   import { terminology } from '$lib/stores/terminology';
@@ -13,7 +13,15 @@
   export let isEditing = false;
   export let submitText = '';
 
-  const dispatch = createEventDispatcher();
+  // Callback props
+  export let onSubmit: ((detail: {
+    title: string;
+    description: string;
+    target_date: string | null;
+    quarter: string | null;
+    year: number | null;
+    goal_type_id: number | undefined;
+  }) => void) | undefined = undefined;
 
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   const currentYear = new Date().getFullYear();
@@ -123,7 +131,7 @@
   }
 
   function handleSubmit() {
-    dispatch('submit', {
+    onSubmit?.({
       title,
       description,
       target_date: targetDate || null,

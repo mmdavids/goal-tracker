@@ -1,29 +1,28 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-
   export let files: File[] = [];
   let fileInput: HTMLInputElement;
 
-  const dispatch = createEventDispatcher();
+  // Callback props
+  export let onChange: ((files: File[]) => void) | undefined = undefined;
 
   function handleFileSelect(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.files) {
       files = [...files, ...Array.from(target.files)];
-      dispatch('change', files);
+      onChange?.(files);
     }
   }
 
   function removeFile(index: number) {
     files = files.filter((_, i) => i !== index);
-    dispatch('change', files);
+    onChange?.(files);
   }
 
   function handleDrop(e: DragEvent) {
     e.preventDefault();
     if (e.dataTransfer?.files) {
       files = [...files, ...Array.from(e.dataTransfer.files)];
-      dispatch('change', files);
+      onChange?.(files);
     }
   }
 

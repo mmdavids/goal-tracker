@@ -1,12 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goals } from '$lib/stores/goals';
-  import { goalsAPI, type Goal } from '$lib/api/client';
+  import { goalsAPI, todosAPI, type Goal, type Todo } from '$lib/api/client';
   import GoalCard from '$lib/components/GoalCard.svelte';
   import GoalTable from '$lib/components/GoalTable.svelte';
   import GoalForm from '$lib/components/GoalForm.svelte';
-  import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List, Table } from 'lucide-svelte';
+  import TodoForm from '$lib/components/TodoForm.svelte';
+  import TodoSidebar from '$lib/components/TodoSidebar.svelte';
+  import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+  import { Plus, X, Archive, Calendar, FileText, FileArchive, Grid, List, Table, CheckSquare, Trash2 } from 'lucide-svelte';
   import { terminology } from '$lib/stores/terminology';
+  import { displayPreferences } from '$lib/stores/displayPreferences';
 
   let showForm = false;
   let loading = true;
@@ -20,6 +24,11 @@
   let selectedGoalIds: Set<number> = new Set();
   let showExportButton = false;
   let viewMode: 'grid' | 'table' = 'grid';
+  let showTodoForm = false;
+  let showDeleteAllTodosModal = false;
+  let todos: Todo[] = [];
+  let completedTodos: Todo[] = [];
+  let loadingTodos = true;
 
 
   function getFiscalYearStart(): number {
@@ -140,7 +149,23 @@
     } finally {
       loadingArchived = false;
     }
+
+    // Load todos
+    await loadTodos();
   });
+
+  async function loadTodos() {
+    try {
+      loadingTodos = true;
+      const allTodos = await todosAPI.getAll();
+      todos = allTodos.filter((todo: Todo) => todo.status !== 'completed');
+      completedTodos = allTodos.filter((todo: Todo) => todo.status === 'completed');
+    } catch (err) {
+      console.error('Failed to load todos:', err);
+    } finally {
+      loadingTodos = false;
+    }
+  }
 
   async function handleCreateGoal(event: CustomEvent) {
     try {
@@ -218,43 +243,108 @@
       error = err instanceof Error ? err.message : `Failed to export ${$terminology.goal.plural.toLowerCase()}`;
     }
   }
+
+  async function handleCreateTodo(detail: { title: string; description?: string; goal_id?: number; priority: 'low' | 'medium' | 'high'; due_date?: string }) {
+    try {
+      error = '';
+      await todosAPI.create(detail);
+      showTodoForm = false;
+      await loadTodos();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to create todo';
+    }
+  }
+
+  async function handleToggleTodo(detail: { id: number }) {
+    try {
+      await todosAPI.toggleComplete(detail.id);
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to toggle todo:', err);
+    }
+  }
+
+  async function handleEditTodo(detail: { id?: number; title: string; description?: string; goal_id?: number; priority: 'low' | 'medium' | 'high'; due_date?: string }) {
+    try {
+      if (!detail.id) return;
+      await todosAPI.update(detail.id, {
+        title: detail.title,
+        description: detail.description,
+        goal_id: detail.goal_id,
+        priority: detail.priority,
+        due_date: detail.due_date,
+      });
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to edit todo:', err);
+    }
+  }
+
+  async function handleDeleteTodo(detail: { id: number }) {
+    try {
+      await todosAPI.delete(detail.id);
+      await loadTodos();
+    } catch (err) {
+      console.error('Failed to delete todo:', err);
+    }
+  }
+
+  async function handleDeleteAllTodos() {
+    try {
+      error = '';
+      const result = await todosAPI.deleteAll();
+      showDeleteAllTodosModal = false;
+      await loadTodos();
+      // Optionally show a success message
+      if (result.count > 0) {
+        error = `Successfully deleted ${result.count} todo(s)`;
+        setTimeout(() => error = '', 3000);
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to delete todos';
+      showDeleteAllTodosModal = false;
+    }
+  }
 </script>
 
 <svelte:head>
   <title>{$terminology.goal.plural} - {$terminology.appName}</title>
 </svelte:head>
 
-<div class="page-layout">
-  <!-- Sidebar with countdowns -->
-  <aside class="sidebar">
-    <div class="countdown-card">
-      <div class="countdown-header">
-        <Calendar size={20} />
-        <h3>Current Quarter</h3>
-      </div>
-      <div class="countdown-header">
-        <h3>{currentQuarterName}</h3>
-      </div>
-      <div class="countdown-value">
-        <span class="days">{daysLeftInCurrentQuarter}</span>
-        <span class="label">days left</span>
-      </div>
-    </div>
+<div class="page-wrapper">
+  <div class="page-layout" class:no-sidebar={!$displayPreferences.showQuarterCards}>
+    <!-- Sidebar with countdowns -->
+    {#if $displayPreferences.showQuarterCards}
+      <aside class="sidebar">
+        <div class="countdown-card">
+          <div class="countdown-header">
+            <Calendar size={20} />
+            <h3>Current Quarter</h3>
+          </div>
+          <div class="countdown-header">
+            <h3>{currentQuarterName}</h3>
+          </div>
+          <div class="countdown-value">
+            <span class="days">{daysLeftInCurrentQuarter}</span>
+            <span class="label">days left</span>
+          </div>
+        </div>
 
-    <div class="countdown-card year-end">
-      <div class="countdown-header">
-        <Calendar size={20} />
-        <h3>Year End</h3>
-      </div>
-      <div class="countdown-value">
-        <span class="days">{daysLeftInYearEndQuarter}</span>
-        <span class="label">days left</span>
-      </div>
-    </div>
-  </aside>
+        <div class="countdown-card year-end">
+          <div class="countdown-header">
+            <Calendar size={20} />
+            <h3>Year End</h3>
+          </div>
+          <div class="countdown-value">
+            <span class="days">{daysLeftInYearEndQuarter}</span>
+            <span class="label">days left</span>
+          </div>
+        </div>
+      </aside>
+    {/if}
 
-  <!-- Main content -->
-  <div class="dashboard">
+    <!-- Main content -->
+    <div class="dashboard">
     <div class="header">
       <h1>My {$terminology.goal.plural}</h1>
       <div class="header-actions">
@@ -279,6 +369,14 @@
             Select All
           </button>
         {/if}
+        <button class="btn-secondary" on:click={() => showTodoForm = true}>
+          <CheckSquare size={20} />
+          New To-Do
+        </button>
+        <button class="btn-danger" on:click={() => showDeleteAllTodosModal = true}>
+          <Trash2 size={20} />
+          Purge all ambitions
+        </button>
         <button class="btn-primary" on:click={() => (showForm = !showForm)}>
           {#if showForm}
             <X size={20} />
@@ -315,7 +413,7 @@
   {#if showForm}
     <div class="form-container">
       <h2>Create New {$terminology.goal.singular}</h2>
-      <GoalForm on:submit={handleCreateGoal} />
+      <GoalForm onSubmit={handleCreateGoal} />
     </div>
   {/if}
 
@@ -331,7 +429,7 @@
     <GoalTable
       goals={$goals}
       {selectedGoalIds}
-      on:toggle-selection={(e) => toggleGoalSelection(e.detail)}
+      onToggleSelection={toggleGoalSelection}
     />
   {:else}
     <div class="goals-grid">
@@ -368,15 +466,59 @@
       </div>
     </div>
   {/if}
+    </div>
   </div>
+
+  <!-- Collapsible Todo Sidebar -->
+  <TodoSidebar
+    {todos}
+    {completedTodos}
+    loading={loadingTodos}
+    showConvertButton={false}
+    onToggleComplete={handleToggleTodo}
+    onEdit={handleEditTodo}
+    onDelete={handleDeleteTodo}
+    onCreateNew={() => showTodoForm = true}
+  />
 </div>
 
+<TodoForm
+  bind:show={showTodoForm}
+  goalId={null}
+  goals={$goals}
+  onSubmit={handleCreateTodo}
+  onCancel={() => showTodoForm = false}
+/>
+
+{#if showDeleteAllTodosModal}
+  <ConfirmModal
+    title="Delete All To-Dos"
+    message="Are you sure you want to delete ALL to-dos? This action cannot be undone."
+    confirmText="Delete All To-Dos"
+    cancelText="Cancel"
+    onConfirm={handleDeleteAllTodos}
+    onCancel={() => showDeleteAllTodosModal = false}
+  />
+{/if}
+
 <style>
+  .page-wrapper {
+    display: flex;
+    position: relative;
+    width: 100%;
+  }
+
   .page-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 2rem;
     max-width: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .page-layout.no-sidebar {
+    grid-template-columns: 1fr;
   }
 
   .sidebar {
@@ -667,6 +809,25 @@
     background: #059669;
   }
 
+  .btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-danger:hover {
+    background: #991b1b;
+  }
+
   .goal-wrapper {
     position: relative;
     display: flex;
@@ -768,6 +929,11 @@
   }
 
   :global([data-compact="true"]) .btn-export {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  :global([data-compact="true"]) .btn-danger {
     padding: 0.5rem 0.875rem;
     font-size: 0.875rem;
   }

@@ -7,13 +7,15 @@
   import ConfirmModal from './ConfirmModal.svelte';
   import NinjaSliceAnimation from './NinjaSliceAnimation.svelte';
   import { Pencil, Check, X, Trash2, ImagePlus, Save } from 'lucide-svelte';
-  import { createEventDispatcher } from 'svelte';
   import { animationPreferences } from '$lib/stores/animations';
   import { terminology } from '$lib/stores/terminology';
 
   export let update: ProgressUpdate;
 
-  const dispatch = createEventDispatcher();
+  // Callback props
+  export let onUpdated: (() => void) | undefined = undefined;
+  export let onDeleted: (() => void) | undefined = undefined;
+  export let onMoved: ((detail: { newGoalId: number }) => void) | undefined = undefined;
 
   let isEditing = false;
   let editTitle = update.title;
@@ -104,11 +106,11 @@
       if (selectedGoalId !== update.goal_id) {
         await progressAPI.move(update.id, selectedGoalId);
         // If moved to a different goal, we should notify that it was moved
-        dispatch('moved', { newGoalId: selectedGoalId });
+        onMoved?.({ newGoalId: selectedGoalId });
       }
 
-      // Dispatch event to refresh the update
-      dispatch('updated');
+      // Callback to refresh the update
+      onUpdated?.();
       isEditing = false;
     } catch (error) {
       console.error('Failed to save update:', error);
@@ -166,11 +168,11 @@
     try {
       if (ninjaSliceAction === 'image' && imageToDelete !== null) {
         await imagesAPI.delete(imageToDelete);
-        dispatch('updated');
+        onUpdated?.();
         imageToDelete = null;
       } else if (ninjaSliceAction === 'update') {
         await progressAPI.delete(update.id);
-        dispatch('deleted');
+        onDeleted?.();
       }
       ninjaSliceAction = null;
     } catch (error) {
@@ -192,7 +194,7 @@
     try {
       isSaving = true;
       await imagesAPI.upload(update.id, Array.from(files));
-      dispatch('updated');
+      onUpdated?.();
       target.value = ''; // Reset file input
     } catch (error) {
       console.error('Failed to upload images:', error);
@@ -223,7 +225,7 @@
           id="notes"
           bind:value={editNotes}
           placeholder="Add notes..."
-          rows="7"
+          rows="10"
         ></textarea>
       </div>
 

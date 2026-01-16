@@ -7,6 +7,7 @@
   import { compactMode } from '$lib/stores/compactMode';
   import { theme } from '$lib/stores/theme';
   import { terminology } from '$lib/stores/terminology';
+  import { displayPreferences } from '$lib/stores/displayPreferences';
 
   let goalTypes: GoalType[] = [];
   let progressUpdateTypes: ProgressUpdateType[] = [];
@@ -54,30 +55,15 @@
   let putFormDescription = '';
   let putFormEmoji = '📝';
 
-  const icons = [
-    '🎯', '💼', '🌱', '❤️', '📚', '💰', '🚀', '🏆', '⚡', '🎨', '🔥', '💪',
-    '🏃', '🧘', '🏋️', '🥗', '😴', '🧠', '👥', '💑', '👨‍👩‍👧‍👦', '🤝', '🌟',
-    '🏠', '🌿', '🧹', '🍳', '🛋️', '✈️', '🌍', '🗺️', '🏖️', '📖', '🎓',
-    '🧑‍💻', '🔬', '💻', '📈', '🎤', '📊', '🎵', '📷', '✍️', '🎬', '💳',
-    '📉', '🏦', '🎮', '🎸', '🎭', '🧩', '☕', '🌺', '🎪', '🛠️'
-  ];
   const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#f59e0b', '#ec4899', '#06b6d4'];
-  const progressEmojis = [
-    '📝', '✅', '🎉', '💡', '🚀', '⚠️', '📊', '💬', '🔧', '📸', '🎯', '⭐',
-    '✔️', '☑️', '💯', '🏁', '🎊', '🥳', '👏', '🙌', '🚫', '❌', '🛑',
-    '⛔', '🚧', '💭', '🤔', '🧠', '📢', '📣', '💌', '📧', '📋', '📄',
-    '🗂️', '🧪', '🔍', '📈', '📉', '➡️', '⬆️', '⏸️', '▶️', '⏹️', '🔄',
-    '🆕', '🔜', '🔔', '⏰', '💪', '🎁', '📦', '🏷️', '🔗', '🔑',
-    '🗓️', '📅', '📆', '🗒️', '🤝', '👥', '🧑‍💼', '💼', '🎤', '🎧', '📞',
-    '☎️', '📲', '💻', '🖥️', '⌚', '🕐', '🕑', '🕒', '🕓', '✏️', '📌',
-    '📍', '🔖', '🗳️', '🎲', '🔘', '⬜', '◻️', '◼️', '⚪', '⚫'
-  ];
 
   let deleteAnimationEnabled = $animationPreferences.deleteAnimation;
   let compactModeEnabled = $compactMode;
+  let showQuarterCardsEnabled = $displayPreferences.showQuarterCards;
 
   $: animationPreferences.setDeleteAnimation(deleteAnimationEnabled);
   $: compactMode.set(compactModeEnabled);
+  $: displayPreferences.setShowQuarterCards(showQuarterCardsEnabled);
 
   // Section expansion state (all collapsed by default)
   let expandedSections = {
@@ -546,6 +532,18 @@
               bind:checked={deleteAnimationEnabled}
             />
           </label>
+
+          <label class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Show Quarter Cards</span>
+              <span class="toggle-description">Display quarterly goal overview cards on the dashboard</span>
+            </div>
+            <input
+              type="checkbox"
+              class="toggle-checkbox"
+              bind:checked={showQuarterCardsEnabled}
+            />
+          </label>
         </div>
       </div>
     {/if}
@@ -717,17 +715,24 @@
       <form on:submit|preventDefault={handleSubmit} class="modal-form">
         <div class="form-group">
           <label for="icon">Icon</label>
-          <div class="icon-picker">
-            {#each icons as i}
-              <button
-                type="button"
-                class="icon-option"
-                class:selected={formIcon === i}
-                on:click={() => (formIcon = i)}
-              >
-                {i}
-              </button>
-            {/each}
+          <div class="emoji-input-group">
+            <input
+              type="text"
+              id="icon"
+              bind:value={formIcon}
+              placeholder="Paste emoji here"
+              maxlength="4"
+              class="emoji-input"
+            />
+            <span class="emoji-preview">{formIcon}</span>
+          </div>
+          <div class="hint">
+            <p>Paste any emoji, or use keyboard shortcuts:</p>
+            <ul>
+              <li>macOS: <kbd>⌃⌘Space</kbd></li>
+              <li>Windows: <kbd>Win+.</kbd> or <kbd>Win+;</kbd></li>
+              <li>Linux: Usually <kbd>Ctrl+.</kbd> or <kbd>Ctrl+;</kbd></li>
+            </ul>
           </div>
         </div>
 
@@ -786,17 +791,24 @@
       <form on:submit|preventDefault={handleProgressUpdateTypeSubmit} class="modal-form">
         <div class="form-group">
           <label for="emoji">Emoji</label>
-          <div class="icon-picker">
-            {#each progressEmojis as emoji}
-              <button
-                type="button"
-                class="icon-option"
-                class:selected={putFormEmoji === emoji}
-                on:click={() => (putFormEmoji = emoji)}
-              >
-                {emoji}
-              </button>
-            {/each}
+          <div class="emoji-input-group">
+            <input
+              type="text"
+              id="emoji"
+              bind:value={putFormEmoji}
+              placeholder="Paste emoji here"
+              maxlength="4"
+              class="emoji-input"
+            />
+            <span class="emoji-preview">{putFormEmoji}</span>
+          </div>
+          <div class="hint">
+            <p>Paste any emoji, or use keyboard shortcuts:</p>
+            <ul>
+              <li>macOS: <kbd>⌃⌘Space</kbd></li>
+              <li>Windows: <kbd>Win+.</kbd> or <kbd>Win+;</kbd></li>
+              <li>Linux: Usually <kbd>Ctrl+.</kbd> or <kbd>Ctrl+;</kbd></li>
+            </ul>
           </div>
         </div>
 
@@ -1147,31 +1159,74 @@
     color: var(--text-primary);
   }
 
-  .icon-picker,
+  .emoji-input-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .emoji-input {
+    width: 5rem;
+    font-size: 2rem;
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .emoji-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .emoji-preview {
+    font-size: 3rem;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 4rem;
+    text-align: center;
+  }
+
+  .hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+  }
+
+  .hint p {
+    margin: 0 0 0.25rem 0;
+  }
+
+  .hint ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style-type: disc;
+  }
+
+  .hint li {
+    margin: 0.125rem 0;
+  }
+
+  .hint kbd {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 4px;
+    padding: 0.125rem 0.375rem;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.7rem;
+    font-style: normal;
+    color: var(--text-primary);
+  }
+
   .color-picker {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-  }
-
-  .icon-option {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 2px solid var(--border-primary);
-    border-radius: 8px;
-    background: var(--bg-primary);
-    font-size: 1.25rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .icon-option:hover {
-    border-color: var(--color-primary);
-  }
-
-  .icon-option.selected {
-    border-color: var(--color-primary);
-    background: #eff6ff;
   }
 
   .color-option {
