@@ -18,6 +18,53 @@
 
   <div class="changelog-content">
     <section class="changelog-section">
+      <h2>2026-01-16</h2>
+
+      <div class="change-group">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Todo Management System</strong>: Complete task tracking system integrated into the application
+            <ul>
+              <li>Backend NestJS module with full CRUD operations</li>
+              <li>Database todos table with priority levels, due dates, and goal associations</li>
+              <li>TodoForm modal for creating and editing tasks with priority and due date fields</li>
+              <li>TodoList component with search, sort (by created date, due date), and filter capabilities</li>
+              <li>Collapsible TodoSidebar with sticky panel that slides out on hover</li>
+              <li>Tab indicator showing todo count and animated arrow</li>
+              <li>"+" button in sidebar header to quickly create new todos</li>
+              <li>Complete/uncomplete todos with checkbox toggle</li>
+              <li>Edit todos with full modal form (title, description, priority, due date, goal assignment)</li>
+              <li>Delete todos with confirmation</li>
+              <li>Convert todos to progress updates on goal pages</li>
+              <li>Separate "Completed" section at bottom of sidebar for finished tasks</li>
+              <li>Completed todos shown with strikethrough and can be toggled back to incomplete</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <h3>Technical Improvements</h3>
+        <ul>
+          <li><strong>Svelte 5 Migration</strong>: Migrated all components from deprecated createEventDispatcher to callback props pattern
+            <ul>
+              <li>TodoForm: onSubmit, onCancel callbacks</li>
+              <li>TodoList: onToggleComplete, onEdit, onDelete, onConvert callbacks</li>
+              <li>TodoSidebar: all event callbacks plus onCreateNew</li>
+              <li>ProgressUpdate: onUpdated, onDeleted, onMoved callbacks</li>
+              <li>GoalForm: onSubmit callback</li>
+              <li>ImageUpload: onChange callback</li>
+              <li>GoalTable: onToggleSelection callback</li>
+              <li>Type-safe callback signatures with explicit TypeScript interfaces</li>
+              <li>All parent components updated to pass callbacks instead of using event handlers</li>
+              <li>Fixed modal close behavior with proper state cleanup using reactive statements</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
       <h2>2026-01-06</h2>
 
       <div class="change-group">
