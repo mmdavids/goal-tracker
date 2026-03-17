@@ -587,16 +587,6 @@
     color: white;
   }
 
-  .icon-btn-success {
-    color: var(--color-success);
-    border-color: var(--color-success);
-  }
-
-  .icon-btn-success:hover {
-    background: var(--color-success);
-    color: white;
-  }
-
   /* Compact Mode */
   :global([data-compact="true"]) .todo-controls {
     padding: 0.75rem;

@@ -12,9 +12,9 @@
   import TodoForm from '$lib/components/TodoForm.svelte';
   import TodoSidebar from '$lib/components/TodoSidebar.svelte';
   import PadlockAnimation from '$lib/components/PadlockAnimation.svelte';
-  import DatePopup from '$lib/components/DatePopup.svelte';
+  import DateHover from '$lib/components/DateHover.svelte';
   import { celebrateProgress } from '$lib/stores/celebrations';
-  import { calculateTimeProgress, formatDate } from '$lib/utils/date';
+  import { calculateTimeProgress, formatDate, getDayOfMonth } from '$lib/utils/date';
   import { ArrowLeft, Plus, X, Trash2, Pencil, Archive, Save, MessageSquare, ListTodo } from 'lucide-svelte';
   import { terminology } from '$lib/stores/terminology';
 
@@ -30,8 +30,6 @@
   let showAddNoteModal = false;
   let showEditGoalModal = false;
   let showPadlockAnimation = false;
-  let showDatePopup = false;
-  let popupType: 'start' | 'end' | null = null;
   let showTodoForm = false;
   let todos: Todo[] = [];
   let completedTodos: Todo[] = [];
@@ -242,13 +240,6 @@
     }
   }
 
-  function handleMarkerClick(e: MouseEvent, type: 'start' | 'end') {
-    e.preventDefault();
-    e.stopPropagation();
-    popupType = type;
-    showDatePopup = true;
-  }
-
   async function handleCreateTodo(detail: { title: string; description?: string; goal_id?: number; priority: 'low' | 'medium' | 'high'; due_date?: string }) {
     try {
       error = '';
@@ -390,16 +381,18 @@
           </div>
           <div class="time-progress-bar">
             <div class="time-progress-fill" style="width: {timeProgress}%"></div>
-            <button
-              class="time-marker time-marker-start"
-              on:click={(e) => handleMarkerClick(e, 'start')}
-              aria-label="View start date"
-            ></button>
-            <button
-              class="time-marker time-marker-end"
-              on:click={(e) => handleMarkerClick(e, 'end')}
-              aria-label="View target date"
-            ></button>
+            <div class="time-marker-wrapper time-marker-start">
+              <DateHover date={goal.created_at}>
+                <div class="time-marker" role="button" tabindex="0" aria-label="View start date"></div>
+              </DateHover>
+            </div>
+            {#if goal.target_date}
+              <div class="time-marker-wrapper time-marker-end">
+                <DateHover date={goal.target_date}>
+                  <div class="time-marker" role="button" tabindex="0" aria-label="View target date"></div>
+                </DateHover>
+              </div>
+            {/if}
           </div>
         </div>
       {/if}
@@ -542,16 +535,18 @@
               {/if}
             {/if}
             <div class="timeline-item">
-              <div class="timeline-number" class:is-comment={update.progress_delta === 0} class:has-type-emoji={update.progress_update_type_emoji}>
-                <span class="number-text">{updates.length - index}</span>
-                {#if update.progress_update_type_emoji}
-                  <span class="type-emoji">{update.progress_update_type_emoji}</span>
-                {:else if update.progress_delta === 0}
-                  <span class="comment-emoji">💬</span>
-                {:else}
-                  <span class="timeline-dot"></span>
-                {/if}
-              </div>
+              <DateHover date={update.date_achieved || update.created_at}>
+                <div class="timeline-number" class:is-comment={update.progress_delta === 0} class:has-type-emoji={update.progress_update_type_emoji}>
+                  <span class="number-text">{getDayOfMonth(update.date_achieved || update.created_at)}</span>
+                  {#if update.progress_update_type_emoji}
+                    <span class="type-emoji">{update.progress_update_type_emoji}</span>
+                  {:else if update.progress_delta === 0}
+                    <span class="comment-emoji">💬</span>
+                  {:else}
+                    <span class="timeline-dot"></span>
+                  {/if}
+                </div>
+              </DateHover>
               <div class="timeline-content">
                 <ProgressUpdateComponent {update} onUpdated={loadGoalData} onDeleted={loadGoalData} onMoved={loadGoalData} />
               </div>
@@ -628,15 +623,6 @@
     cancelText="Cancel"
     onConfirm={confirmAddNote}
     onCancel={() => showAddNoteModal = false}
-  />
-{/if}
-
-{#if goal}
-  <DatePopup
-    bind:show={showDatePopup}
-    bind:type={popupType}
-    startDate={goal.created_at}
-    endDate={goal.target_date}
   />
 {/if}
 
@@ -893,10 +879,23 @@
     transition: width 0.3s ease;
   }
 
-  .time-marker {
+  .time-marker-wrapper {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    z-index: 2;
+  }
+
+  .time-marker-wrapper.time-marker-start {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .time-marker-wrapper.time-marker-end {
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+
+  .time-marker {
     width: 14px;
     height: 14px;
     border-radius: 50%;
@@ -904,23 +903,12 @@
     border: 2px solid var(--bg-primary);
     cursor: pointer;
     transition: all 0.2s ease;
-    z-index: 2;
   }
 
   .time-marker:hover {
     width: 18px;
     height: 18px;
     box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-  }
-
-  .time-marker-start {
-    left: 0;
-    transform: translate(-50%, -50%);
-  }
-
-  .time-marker-end {
-    right: 0;
-    transform: translate(50%, -50%);
   }
 
   .error-banner {

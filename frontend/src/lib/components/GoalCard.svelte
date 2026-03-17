@@ -8,6 +8,9 @@
 
   let showDatePopup = false;
   let popupType: 'start' | 'end' | null = null;
+  let isDescriptionExpanded = false;
+
+  const MAX_DESCRIPTION_LINES = 3;
 
   function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -22,6 +25,12 @@
     e.stopPropagation();
     popupType = type;
     showDatePopup = true;
+  }
+
+  function toggleDescription(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    isDescriptionExpanded = !isDescriptionExpanded;
   }
 
   $: timeProgress = goal.target_date ? calculateTimeProgress(goal.created_at, goal.target_date) : null;
@@ -42,7 +51,14 @@
   {/if}
 
   {#if goal.description}
-    <p class="description">{goal.description}</p>
+    <div class="description-wrapper">
+      <p class="description" class:expanded={isDescriptionExpanded}>
+        {goal.description}
+      </p>
+      <button class="show-more-btn" on:click={toggleDescription}>
+        {isDescriptionExpanded ? 'Show less' : 'Show more'}
+      </button>
+    </div>
   {/if}
 
   <div class="card-bottom">
@@ -170,16 +186,44 @@
     font-size: 1rem;
   }
 
+  .description-wrapper {
+    margin-bottom: 1rem;
+  }
+
   .description {
     color: var(--text-secondary);
     font-size: 0.875rem;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
     line-height: 1.5;
     white-space: pre-line;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
     overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .description.expanded {
+    -webkit-line-clamp: unset;
+    display: block;
+  }
+
+  .show-more-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+    text-decoration: underline;
+  }
+
+  .show-more-btn:hover {
+    color: #2563eb;
   }
 
   .card-bottom {
@@ -333,9 +377,18 @@
     font-size: 0.75rem;
   }
 
+  :global([data-compact="true"]) .description-wrapper {
+    margin-bottom: 0.5rem;
+  }
+
   :global([data-compact="true"]) .description {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.375rem 0;
     font-size: 0.8125rem;
+    -webkit-line-clamp: 2;
+  }
+
+  :global([data-compact="true"]) .show-more-btn {
+    font-size: 0.75rem;
   }
 
   :global([data-compact="true"]) .card-bottom {

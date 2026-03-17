@@ -107,3 +107,9 @@ export function formatTime(date: string | Date): string {
     hour12: false,
   });
 }
+
+// Get the day of the month (1-31)
+export function getDayOfMonth(date: string | Date): number {
+  const d = parseDate(date);
+  return d.getDate();
+}
