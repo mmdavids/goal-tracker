@@ -18,6 +18,18 @@
 
   <div class="changelog-content">
     <section class="changelog-section">
+      <h2>2026-03-18</h2>
+
+      <div class="change-group">
+        <h3>Bug Fixes</h3>
+        <ul>
+          <li><strong>Goal creation fixed</strong>: POST body was empty because handlers still read <code>event.detail</code> after Svelte 5 callback migration — fixed to use direct callback argument</li>
+          <li><strong>Modal outside-click dismissal disabled</strong>: Clicking outside a popup form no longer closes it, preventing accidental data loss when selecting text and releasing the mouse outside the modal</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="changelog-section">
       <h2>2026-01-16</h2>
 
       <div class="change-group">

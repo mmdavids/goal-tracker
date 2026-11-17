@@ -703,7 +703,7 @@
 {/if}
 
 {#if showForm}
-  <div class="modal-overlay" on:click={closeForm}>
+  <div class="modal-overlay">
     <div class="modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>{editingId ? 'Edit' : 'New'} '{$terminology.goal.singular}' Type</h2>
@@ -779,7 +779,7 @@
 {/if}
 
 {#if showProgressUpdateTypeForm}
-  <div class="modal-overlay" on:click={closeProgressUpdateTypeForm}>
+  <div class="modal-overlay">
     <div class="modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>{editingProgressUpdateTypeId ? 'Edit' : 'New'} Progress Update Type</h2>

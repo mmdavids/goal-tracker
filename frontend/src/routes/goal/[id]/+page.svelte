@@ -190,12 +190,12 @@
     }
   }
 
-  async function handleEditGoal(event: CustomEvent) {
+  async function handleEditGoal(detail: { title: string; description: string; target_date: string | null; quarter: string | null; year: number | null; goal_type_id: number | undefined }) {
     if (!goal) return;
 
     try {
       error = '';
-      await goalsAPI.update(goal.id, event.detail);
+      await goalsAPI.update(goal.id, detail);
       await loadGoalData();
       showEditGoalModal = false;
     } catch (err) {
@@ -635,7 +635,7 @@
 />
 
 {#if showEditGoalModal && goal}
-  <div class="modal-backdrop" on:click={(e) => e.target === e.currentTarget && (showEditGoalModal = false)} role="presentation">
+  <div class="modal-backdrop" role="presentation">
     <div class="modal-content edit-goal-modal">
       <button class="modal-close-button" on:click={() => showEditGoalModal = false} aria-label="Close">
         <X size={24} />

@@ -167,10 +167,10 @@
     }
   }
 
-  async function handleCreateGoal(event: CustomEvent) {
+  async function handleCreateGoal(detail: { title: string; description: string; target_date: string | null; quarter: string | null; year: number | null; goal_type_id: number | undefined }) {
     try {
       error = '';
-      await goals.add(event.detail);
+      await goals.add(detail);
       showForm = false;
     } catch (err) {
       error = err instanceof Error ? err.message : `Failed to create ${$terminology.goal.singular.toLowerCase()}`;
